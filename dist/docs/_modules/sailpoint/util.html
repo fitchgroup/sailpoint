@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sailpoint.util &#8212; sailpoint 1.3.post1.dev0+g59628e0.d20230606 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for sailpoint.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.api</span> <span class="kn">import</span> <span class="n">IDNApi</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="c1"># from rich.str import str_repr as str</span>
+<span class="kn">from</span> <span class="nn">rich.pretty</span> <span class="kn">import</span> <span class="n">pretty_repr</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="IDN"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN">[docs]</a><span class="k">class</span> <span class="nc">IDN</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tenant</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">idn_api</span> <span class="o">=</span> <span class="n">IDNApi</span><span class="p">(</span><span class="n">secret</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">tenant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api</span> <span class="o">=</span> <span class="n">idn_api</span><span class="o">.</span><span class="n">r</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="IDN.create_gg"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.create_gg">[docs]</a>    <span class="k">def</span> <span class="nf">create_gg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">owner_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a Governance Group</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        name: string</span>
+<span class="sd">            The name of the Governance Group</span>
+
+<span class="sd">        description: string</span>
+<span class="sd">            The description for the Governance Group</span>
+
+<span class="sd">        owner_id: string</span>
+<span class="sd">            The Owner of the Access Profile specified by their loginID</span>
+<span class="sd">            (sAMAccountName)</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">owner_idn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_id_by_login</span><span class="p">(</span><span class="n">owner_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span>
+            <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">owner_idn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)},</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating Governance Group&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;workgroups&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v2&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="IDN.get_cc_id_for_id"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_cc_id_for_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_cc_id_for_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idn_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the &#39;cc&#39; user ID for the ID that is passed in</span>
+
+<span class="sd">        This is used, for example, when specifying an App Owner on an app. The</span>
+<span class="sd">        API call for updating the app parameters is a CC API call, which requires</span>
+<span class="sd">        you to use the &#39;cc&#39; user ID.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        idn_id: dict</span>
+<span class="sd">            The ID of the user you want to look up</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        cc_id: string - the users CC id if found</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">display_name</span> <span class="o">=</span> <span class="n">idn_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayName&#39;</span><span class="p">)</span>
+        <span class="n">external_id</span> <span class="o">=</span> <span class="n">idn_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">display_name</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;joinOperator&quot;</span><span class="p">:</span> <span class="s2">&quot;OR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;property&quot;</span><span class="p">:</span> <span class="s2">&quot;displayName&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;operation&quot;</span><span class="p">:</span> <span class="s2">&quot;STARTSWITH&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">display_name</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="n">filter_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;user/list?filters=</span><span class="si">{</span><span class="n">filter_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Looking for id: </span><span class="si">{</span><span class="n">external_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;items&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;externalId&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="n">external_id</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;found&#39;</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IDN.get_gg_members"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_gg_members">[docs]</a>    <span class="k">def</span> <span class="nf">get_gg_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ggid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Governance Group members</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        ggid: string</span>
+<span class="sd">            The ID of the governance group that you want to get the members</span>
+<span class="sd">            of</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        members: dict</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get governance group members</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;workgroups/</span><span class="si">{</span><span class="n">ggid</span><span class="si">}</span><span class="s1">/members&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v2&#39;</span><span class="p">)</span>
+        <span class="c1"># print(ret)</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.get_org"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_org">[docs]</a>    <span class="k">def</span> <span class="nf">get_org</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the org information</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        org</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting tenant info&#39;</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v2&#39;</span><span class="p">)</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+        <span class="c1">#    for e in orgs:</span>
+        <span class="c1">#        log.info(e)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">org</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">org</span></div>
+
+<div class="viewcode-block" id="IDN.list_identity_attributes_source"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.list_identity_attributes_source">[docs]</a>    <span class="k">def</span> <span class="nf">list_identity_attributes_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all identity attributes from profile source&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;identity-profiles&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">attributes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">attributes</span></div>
+
+<div class="viewcode-block" id="IDN.list_identity_attributes"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.list_identity_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">list_identity_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all identity attributes&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;identityAttribute/list&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">attributes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">attributes</span></div>
+
+<div class="viewcode-block" id="IDN.get_attribute_map"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_attribute_map">[docs]</a>    <span class="k">def</span> <span class="nf">get_attribute_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">map_source</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the attribute map&quot;&quot;&quot;</span>
+        <span class="n">target_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_identity_attributes</span><span class="p">()</span>
+        <span class="n">source_systems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_identity_attributes_source</span><span class="p">()</span>
+
+        <span class="c1"># reindex to attribute name</span>
+        <span class="n">attr_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">source_systems</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">map_source</span><span class="p">:</span>
+                <span class="n">source_config</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;identityAttributeConfig&#39;</span><span class="p">)</span>
+                <span class="n">source_attrs</span> <span class="o">=</span> <span class="n">source_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attributeTransforms&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source_attrs</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got Source attributes&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">source_attrs</span><span class="p">:</span>
+                <span class="n">attr_name</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;identityAttributeName&#39;</span><span class="p">)</span>
+                <span class="n">attr_map</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="s1">&#39;dest&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">pretty_repr</span><span class="p">(</span><span class="n">target_attrs</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target_attrs</span><span class="p">:</span>
+            <span class="n">attr_name</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targets&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">attr_map</span><span class="p">[</span><span class="n">attr_name</span><span class="p">][</span><span class="s1">&#39;dest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">targets</span>
+
+        <span class="k">return</span> <span class="n">attr_map</span></div>
+
+<div class="viewcode-block" id="IDN.get_entitlement_by_id"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_entitlement_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_entitlement_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entitlement_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an entitlement by its ID</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        entitlement: string</span>
+<span class="sd">            The ID that you want</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        entitlement: dict</span>
+<span class="sd">            The entitlement</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Getting Entitlement with id: </span><span class="si">{</span><span class="n">entitlement_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;entitlements/</span><span class="si">{</span><span class="n">entitlement_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
+        <span class="n">entitlement</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+        <span class="c1">#    for e in entitlements:</span>
+        <span class="c1">#        log.info(e)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">entitlement</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">entitlement</span></div>
+
+<div class="viewcode-block" id="IDN.get_entitlements_for_source"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_entitlements_for_source">[docs]</a>    <span class="k">def</span> <span class="nf">get_entitlements_for_source</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">source_id</span><span class="p">,</span> <span class="n">search_item</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">search_name</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets entitlements for source</span>
+
+<span class="sd">        Returns only top 250</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        source_id: string</span>
+<span class="sd">            The source ID that you want the entitlements for.</span>
+
+<span class="sd">        search_name: string (optional)</span>
+<span class="sd">            The entitlement you want to search for.  In this case the &#39;name&#39;</span>
+<span class="sd">            represents the Entitlement Name as defined in the source schema.</span>
+
+<span class="sd">        search_item: string (optional default is &#39;name&#39;)</span>
+<span class="sd">            Either &#39;name&#39; or &#39;id&#39; so you can search on the name or on the</span>
+<span class="sd">            ID of the entitlement.  In this case the &#39;id&#39; represents the</span>
+<span class="sd">            Entitlement ID as defined in the source schema.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        entitlements: generator of dicts</span>
+<span class="sd">            The entitlements</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Getting Entitlements for source: </span><span class="si">{</span><span class="n">source_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># parameters = f&#39;filters=source.id in (&quot;{source_id}&quot;)&#39;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;filters=source.id eq &quot;</span><span class="si">{</span><span class="n">source_id</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+
+        <span class="k">if</span> <span class="n">search_name</span><span class="p">:</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">parameters</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">search_item</span><span class="si">}</span><span class="s1"> eq &quot;</span><span class="si">{</span><span class="n">search_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;entitlements?offset=</span><span class="si">{</span><span class="n">offset</span><span class="si">}</span><span class="s1">&amp;limit=250&amp;sorters=id&amp;</span><span class="si">{</span><span class="n">parameters</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ret</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="n">entitlements</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">entitlements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">entitlements</span><span class="p">:</span>
+                    <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Did not get 200 status_code - retrying&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IDN.get_id_by_login"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_id_by_login">[docs]</a>    <span class="k">def</span> <span class="nf">get_id_by_login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an Identity for the login specified</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        login: string</span>
+<span class="sd">            The login for the identity you want to retrieve</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        ids: list</span>
+<span class="sd">            The Identity</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Getting id by login&#39;</span><span class="p">)</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;attributes.activeDirectoryUsername:</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">login</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;identities&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;includeNested&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;search&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+<div class="viewcode-block" id="IDN.create_ap"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.create_ap">[docs]</a>    <span class="k">def</span> <span class="nf">create_ap</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">,</span>
+        <span class="n">source_name</span><span class="p">,</span>
+        <span class="n">owner_login</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">owner_email</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">entitlements</span><span class="o">=</span><span class="p">[],</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an Access Profile</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        name: string</span>
+<span class="sd">            The name of the Access Profile</span>
+
+<span class="sd">        description: string</span>
+<span class="sd">            The description for the Access Profile</span>
+
+<span class="sd">        owner_login: string</span>
+<span class="sd">            The Owner of the Access Profile specified by their loginID</span>
+<span class="sd">            (sAMAccountName)</span>
+
+<span class="sd">        owner_email: string</span>
+<span class="sd">            The Owner of the Access Profile specified by their email</span>
+<span class="sd">            if owner_login is specified, this will be given preference</span>
+
+<span class="sd">        source_name: string</span>
+<span class="sd">            The source of the Access Profile specified by its name</span>
+
+<span class="sd">        enabled: boolean</span>
+<span class="sd">            If the Access Profile is enabled or not</span>
+
+<span class="sd">        entitlements: list of entitlement dicts (id, name, type)</span>
+<span class="sd">            The list of entitlements that are included in this Access Profile</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        return: json - output from the api call</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">owner_login</span><span class="p">:</span>
+            <span class="n">owner_idn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_id_by_login</span><span class="p">(</span><span class="n">owner_login</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">owner_idn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_user_by_email</span><span class="p">(</span><span class="n">owner_email</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">source_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sourceid_for_name</span><span class="p">(</span><span class="n">source_name</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span>
+            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;IDENTITY&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">owner_idn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">owner_idn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">source_id</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;SOURCE&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">source_name</span><span class="p">},</span>
+            <span class="s2">&quot;entitlements&quot;</span><span class="p">:</span> <span class="n">entitlements</span><span class="p">,</span>
+            <span class="s2">&quot;requestable&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;accessRequestConfig&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;commentsRequired&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;denialCommentsRequired&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;approvalSchemes&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;approverType&quot;</span><span class="p">:</span> <span class="s2">&quot;MANAGER&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating Access Profile&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">pretty_repr</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;access-profiles&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">pretty_repr</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.get_aps_for_source"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_aps_for_source">[docs]</a>    <span class="k">def</span> <span class="nf">get_aps_for_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get access profiles for a specific source</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        source_id: string</span>
+<span class="sd">            The ID of the source</span>
+
+<span class="sd">        source_name: string</span>
+<span class="sd">            The Name of the source</span>
+
+<span class="sd">        Either the name or the ID must be specified</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        access_profiles: generator of dicts</span>
+<span class="sd">            The access profiles</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source_id</span><span class="p">:</span>
+            <span class="n">source_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sourceid_for_name</span><span class="p">(</span><span class="n">source_name</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Getting Entitlements for source: </span><span class="si">{</span><span class="n">source_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># parameters = f&#39;filters=source.id in (&quot;{source_id}&quot;)&#39;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;filters=source.id eq &quot;</span><span class="si">{</span><span class="n">source_id</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;access-profiles?offset=</span><span class="si">{</span><span class="n">offset</span><span class="si">}</span><span class="s1">&amp;limit=250&amp;sorters=id&amp;</span><span class="si">{</span><span class="n">parameters</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ret</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="n">access_profiles</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">access_profiles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+                <span class="k">for</span> <span class="n">ap</span> <span class="ow">in</span> <span class="n">access_profiles</span><span class="p">:</span>
+                    <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">ap</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Did not get 200 status_code - retrying&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IDN.update_entitlement"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.update_entitlement">[docs]</a>    <span class="k">def</span> <span class="nf">update_entitlement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entitlement_id</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Used to update the entitlement.</span>
+
+<span class="sd">            Use case is to update the description.</span>
+
+<span class="sd">            If you set this to blank it will get updated based on the source</span>
+<span class="sd">            description at the time the next entitlement aggregation is run</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        entitlement_id: string</span>
+<span class="sd">            The entitlement that you want to update specified by its ID</span>
+
+<span class="sd">        attr: string  (DEFAULT: description)</span>
+<span class="sd">            The attribute you want to update.</span>
+
+<span class="sd">        val: string (DEFAULT: EMPTY)</span>
+<span class="sd">            The value that you want to save</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        entitlement: dict</span>
+<span class="sd">            The entitlement as it is after it has been updated</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;entitlements/</span><span class="si">{</span><span class="n">entitlement_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Before Update&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+        <span class="c1">#    # Bulk update not working</span>
+        <span class="c1">#    # Bad Content Error</span>
+        <span class="c1">#    # The request was syntactically correct but its content</span>
+        <span class="c1">#    # is semantically invalid.</span>
+        <span class="c1">#    payload = {</span>
+        <span class="c1">#        &quot;entitlementIds&quot;: [f&quot;{entitlement_id}&quot;],</span>
+        <span class="c1">#        &quot;jsonPatch&quot;: [</span>
+        <span class="c1">#            {</span>
+        <span class="c1">#                &quot;op&quot;: &quot;replace&quot;,</span>
+        <span class="c1">#                &quot;path&quot;: &quot;description&quot;,</span>
+        <span class="c1">#                &quot;value&quot;: &quot;My Test&quot;,</span>
+        <span class="c1">#            }</span>
+        <span class="c1">#        ],</span>
+        <span class="c1">#    }</span>
+        <span class="c1">#    log.info(payload)</span>
+        <span class="c1">#    ret = self.api(</span>
+        <span class="c1">#        &#39;entitlements/bulk-update&#39;, payload=payload,</span>
+        <span class="c1">#         method=&#39;POST&#39;, api=&#39;beta&#39;</span>
+        <span class="c1">#    )</span>
+        <span class="c1">#</span>
+        <span class="c1">#    log.info(&#39;Result of bulk update&#39;)</span>
+        <span class="c1">#    log.info(ret.json())</span>
+
+        <span class="c1">#    # The following PATCH method on dscription results in</span>
+        <span class="c1">#    # &#39;Illegal attempt to modify &quot;description&quot; field.&#39;</span>
+        <span class="c1">#    new_header = {&#39;Content-Type&#39;: &#39;application/json-patch+json&#39;}</span>
+        <span class="c1">#    payload = [</span>
+        <span class="c1">#        {</span>
+        <span class="c1">#            &quot;op&quot;: &quot;replace&quot;,</span>
+        <span class="c1">#            # &quot;path&quot;: &quot;/attributes/description&quot;,</span>
+        <span class="c1">#            &quot;path&quot;: &quot;/description&quot;,</span>
+        <span class="c1">#            &quot;value&quot;: &quot;My Test Update&quot;,</span>
+        <span class="c1">#        }</span>
+        <span class="c1">#    ]</span>
+        <span class="c1">#    log.info(payload)</span>
+        <span class="c1">#    ret = self.api(</span>
+        <span class="c1">#        f&#39;entitlements/{entitlement_id}&#39;,</span>
+        <span class="c1">#        payload=payload,</span>
+        <span class="c1">#        headers=new_header,</span>
+        <span class="c1">#        method=&#39;PATCH&#39;,</span>
+        <span class="c1">#        api=&#39;beta&#39;,</span>
+        <span class="c1">#    )</span>
+        <span class="c1">#</span>
+        <span class="c1">#    log.info(&#39;Result of PATCH update&#39;)</span>
+        <span class="c1">#    log.info(ret.json())</span>
+
+        <span class="c1"># first get it in its existing state</span>
+        <span class="n">entitlement</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">source_id</span> <span class="o">=</span> <span class="n">entitlement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">source_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># override what we got</span>
+        <span class="n">entitlement</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="c1"># API requires you upload a CSV file with the values similar to how you</span>
+        <span class="c1"># do in the UI</span>
+
+        <span class="c1"># No need to write it to disk</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;attributeName&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;attributeValue&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;displayName&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;privileged&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;schema&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">entitlement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attribute&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="n">entitlement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="n">entitlement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="n">entitlement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">entitlement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;privileged&#39;</span><span class="p">,</span> <span class="s1">&#39;FALSE&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                <span class="n">entitlement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sourceSchemaObjectType&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># files = {&#39;csvFile&#39;: open(&#39;test-entitlements.csv&#39;, &#39;rb&#39;)}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;csvFile&#39;</span><span class="p">:</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())}</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;entitlements/sources/</span><span class="si">{</span><span class="n">source_id</span><span class="si">}</span><span class="s1">/entitlements/import&#39;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+            <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+            <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Update results:&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;entitlements/</span><span class="si">{</span><span class="n">entitlement_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;After Update&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.list_apps"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.list_apps">[docs]</a>    <span class="k">def</span> <span class="nf">list_apps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all apps from IDN for the org (aka. Tennant)&quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;list_apps - start&#39;</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;app/list?filter=org&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="c1"># log.debug(ret.text)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.get_ap"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_ap">[docs]</a>    <span class="k">def</span> <span class="nf">get_ap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ap_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ap_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the Access Profile</span>
+
+<span class="sd">        Dont confuse ap (access profile) with app (Application)</span>
+
+<span class="sd">        Either ap_id or ap_name must be specified. If ap_name is specified</span>
+<span class="sd">        there must be only a single ap that has that name, otherwise this</span>
+<span class="sd">        will raise an exception.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        ap_id: string</span>
+<span class="sd">            The ap ID that you want to fetch. You can use the ID as found</span>
+<span class="sd">            from the list_aps method.</span>
+
+<span class="sd">        ap_name: string</span>
+<span class="sd">            The name of the ap that you want to fetch.  This search is case</span>
+<span class="sd">            sensitive.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        ap: dict</span>
+<span class="sd">            The access profile and its attributes</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Getting Access Profile: </span><span class="si">{</span><span class="n">ap_name</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">ap_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ap_name</span><span class="p">:</span>
+            <span class="n">get_aps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Searching for Acces Profile: </span><span class="si">{</span><span class="n">ap_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;filters=name eq &quot;</span><span class="si">{</span><span class="n">ap_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;access-profiles?</span><span class="si">{</span><span class="n">parameters</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v3&#39;</span><span class="p">)</span>
+            <span class="n">get_aps</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+            <span class="n">num_found_aps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_aps</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">num_found_aps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">ap_id</span> <span class="o">=</span> <span class="n">get_aps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting ap&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">ap_id</span>
+            <span class="k">elif</span> <span class="n">num_found_aps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Could not get ap </span><span class="si">{</span><span class="n">ap_name</span><span class="si">}</span><span class="s1"> - Not found&#39;</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">num_found_aps</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Could not get ap </span><span class="si">{</span><span class="n">ap_name</span><span class="si">}</span><span class="s1"> - Multiple aps with&#39;</span>
+                    <span class="s1">&#39;this name were found&#39;</span>
+                <span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ap_id</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;access-profiles/</span><span class="si">{</span><span class="n">ap_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v3&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Using the ID there should only be one</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="c1"># log.info(ret.text)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;get_ap requires ap_name or ap_id&#39;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IDN.update_ap"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.update_ap">[docs]</a>    <span class="k">def</span> <span class="nf">update_ap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ap_id</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates an Access Profile</span>
+
+<span class="sd">        This updates an access profile.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        ap_id: string</span>
+<span class="sd">            The ap ID that you want to update.</span>
+
+<span class="sd">        parameter: string</span>
+<span class="sd">            The parameter that you want to update.</span>
+
+<span class="sd">        value: string</span>
+<span class="sd">            The value you want to set.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        ap: dict</span>
+<span class="sd">            The aplication and its attributes</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;update ap- start&#39;</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;replace&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ap_id</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+
+        <span class="n">patch_header</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json-patch+json&#39;</span><span class="p">}</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;access-profiles/</span><span class="si">{</span><span class="n">ap_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;PATCH&#39;</span><span class="p">,</span>
+            <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">patch_header</span><span class="p">,</span>
+            <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.get_app"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_app">[docs]</a>    <span class="k">def</span> <span class="nf">get_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">app_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the App</span>
+
+<span class="sd">        Dont confuse ap (access profile) with app (Application)</span>
+
+<span class="sd">        Either app_id or app_name must be specified. If app_name is specified</span>
+<span class="sd">        there must be only a single app that has that name, otherwise this</span>
+<span class="sd">        will raise an exception.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app_id: string</span>
+<span class="sd">            The app ID that you want to fetch. You can use the ID as found</span>
+<span class="sd">            from the list_apps method.</span>
+
+<span class="sd">        app_name: string</span>
+<span class="sd">            The name of the app that you want to fetch.  This search is case</span>
+<span class="sd">            sensitive.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app: dict</span>
+<span class="sd">            The application and its attributes</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;get_app - start&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">app_name</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Searching for app: [</span><span class="si">{</span><span class="n">app_name</span><span class="si">}</span><span class="s1">]&#39;</span><span class="p">)</span>
+            <span class="n">get_apps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_apps</span><span class="p">():</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+                <span class="c1"># log.debug(f&#39;Found app: [{name}] looking for [{app_name}]&#39;)</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">app_name</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Found app to get based on name&#39;</span><span class="p">)</span>
+                    <span class="n">get_apps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">))</span>
+            <span class="n">num_found_apps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_apps</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">num_found_apps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">app_id</span> <span class="o">=</span> <span class="n">get_apps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting app&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">num_found_apps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Could not get app </span><span class="si">{</span><span class="n">app_name</span><span class="si">}</span><span class="s1"> - Not found&#39;</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">num_found_apps</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Could not get app </span><span class="si">{</span><span class="n">app_name</span><span class="si">}</span><span class="s1"> - Multiple apps with&#39;</span>
+                    <span class="s1">&#39;this name were found&#39;</span>
+                <span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">app_id</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;app/get/</span><span class="si">{</span><span class="n">app_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Using the ID there should only be one</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="c1"># log.info(ret.text)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;get_app requires app_name or app_id&#39;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IDN.create_app"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.create_app">[docs]</a>    <span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an Application</span>
+
+<span class="sd">        This creates an Application.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        name: string</span>
+<span class="sd">            The name of the application.</span>
+
+<span class="sd">        description: string</span>
+<span class="sd">            The description for the application.</span>
+
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app: dict</span>
+<span class="sd">            The application with its status</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;create_app - start&#39;</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span>
+            <span class="s1">&#39;appType&#39;</span><span class="p">:</span> <span class="s1">&#39;PASSWORD_MANAGEMENT_ONLY&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;app/create&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Using the ID there should only be one</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="c1"># log.debug(ret.text)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.update_app"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.update_app">[docs]</a>    <span class="k">def</span> <span class="nf">update_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates an Application</span>
+
+<span class="sd">        This updates an Application.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app_id: string</span>
+<span class="sd">            The app ID that you want to fetch. You can use the ID as found</span>
+<span class="sd">            from the list_apps method.</span>
+
+<span class="sd">        parameter: string</span>
+<span class="sd">            The parameter that you want to update. To update the name use</span>
+<span class="sd">            alias instead.</span>
+
+<span class="sd">        value: string</span>
+<span class="sd">            The value you want to set.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app: dict</span>
+<span class="sd">            The application and its attributes</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;update app- start&#39;</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">parameter</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;app/update/</span><span class="si">{</span><span class="n">app_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span>
+        <span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.delete_app"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.delete_app">[docs]</a>    <span class="k">def</span> <span class="nf">delete_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">app_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes an Application</span>
+
+<span class="sd">        This deletes an Application.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+
+<span class="sd">        Either app_id or app_name must be specified. If app_name is specified</span>
+<span class="sd">        there must be only a single app that has that name, otherwise this</span>
+<span class="sd">        will raise an exception.</span>
+
+<span class="sd">        app_id: string</span>
+<span class="sd">            The appID of the application. NOTE: This uses the old cc API</span>
+<span class="sd">            but this is NOT the short app app ID. (eg. 24016) You must list</span>
+<span class="sd">            the app and then get the appId parameter from the app.</span>
+
+<span class="sd">        app_name: string</span>
+<span class="sd">            The name of the application.</span>
+
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app: dict</span>
+<span class="sd">            The application with its status</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;delete_app - start&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">app_name</span><span class="p">:</span>
+            <span class="n">delete_apps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_apps</span><span class="p">():</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">app_name</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Found app to delete based on name&#39;</span><span class="p">)</span>
+                    <span class="n">delete_apps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;appId&#39;</span><span class="p">))</span>
+            <span class="n">num_del_apps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">delete_apps</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">num_del_apps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">app_id</span> <span class="o">=</span> <span class="n">delete_apps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Deleting app&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">num_del_apps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Could not delete app </span><span class="si">{</span><span class="n">app_name</span><span class="si">}</span><span class="s1"> - Not found&#39;</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">num_del_apps</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Could not delete app </span><span class="si">{</span><span class="n">app_name</span><span class="si">}</span><span class="s1"> - Multiple apps with&#39;</span>
+                    <span class="s1">&#39;this name were found&#39;</span>
+                <span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">app_id</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;app/delete/</span><span class="si">{</span><span class="n">app_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Using the ID there should only be one</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="c1"># log.info(ret.text)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;delete_app requires app_name or app_id&#39;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IDN.get_app_owner"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_app_owner">[docs]</a>    <span class="k">def</span> <span class="nf">get_app_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the Identity of the application owner</span>
+
+<span class="sd">        Uses the search API to get the application owner. If you change the</span>
+<span class="sd">        application owner, this can take some time to synchronize before it</span>
+<span class="sd">        will appear here. The application owner can also be obtained by</span>
+<span class="sd">        calling get_app, however this only gives you the short (cc) ID of the</span>
+<span class="sd">        owner and not the full identity.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app_name: string</span>
+<span class="sd">            The name of the app that you want to fetch.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        owner_Identity: dict</span>
+<span class="sd">            The Identity of the owner</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;get_app_owner - start&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;getting app: </span><span class="si">{</span><span class="n">app_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;identities&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;owns.apps.name:&quot;</span><span class="si">{</span><span class="n">app_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;search&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v3&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Using the ID there should only be one</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="c1"># log.debug(ret.text)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="IDN.get_app_access_profiles"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_app_access_profiles">[docs]</a>    <span class="k">def</span> <span class="nf">get_app_access_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the access profiles for an app.</span>
+<span class="sd">            This comes from the cc api app_id is the cc id</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        app_id: string</span>
+<span class="sd">            The app ID that you want to fetch the access profiles for. You</span>
+<span class="sd">            can use the ID as found from the list_apps method.</span>
+
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        access_profiles: list of dicts</span>
+<span class="sd">            The access profiles that are part of the application requested.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;get_app - start&#39;</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;app/getAccessProfiles/</span><span class="si">{</span><span class="n">app_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="c1"># log.debug(ret.text)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;items&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="IDN.search"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs a generic search</span>
+
+<span class="sd">        You must provide the full payload.</span>
+
+<span class="sd">        Can be used to search for anything that the search accepts</span>
+
+<span class="sd">        Tip: Use developer tools in your browser on the search screen to</span>
+<span class="sd">        figure out the payload.</span>
+
+<span class="sd">        For example:</span>
+
+<span class="sd">        payload = {</span>
+<span class="sd">            &quot;query&quot;: {&quot;query&quot;: &quot;email:\&quot;davep@fitchratings.com\&quot;&quot;},</span>
+<span class="sd">            &quot;indices&quot;: [&quot;identities&quot;],</span>
+<span class="sd">        }</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        payload: dict</span>
+<span class="sd">            The full search payload</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        dict: the result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;search&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+<div class="viewcode-block" id="IDN.get_user_by_email"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_user_by_email">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_by_email</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the user by their email</span>
+
+<span class="sd">        Search is case insensitive</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        name: string</span>
+<span class="sd">            The email to search</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        identities: list of identities which match</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;email:</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;identities&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;search&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.get_user_by_name"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_user_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the user by their name</span>
+
+<span class="sd">        You can also include wildcards such as: Dave*</span>
+<span class="sd">        Search is case insensitive</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        name: string</span>
+<span class="sd">            The name to search</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        identities: list of identities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;displayName:</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;identities&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;search&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IDN.get_user_by_id"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_user_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the user by their ID</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        user_id: string</span>
+<span class="sd">            The users ID.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        identity: The Identity that matched</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;id:</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">user_id</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;indices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;identities&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;search&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+        <span class="c1"># there should be only one as we are searching on the ID itself</span>
+        <span class="k">return</span> <span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="IDN.list_identity_profiles"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.list_identity_profiles">[docs]</a>    <span class="k">def</span> <span class="nf">list_identity_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List identity profiles&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;identity_profiles&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">sources</span></div>
+
+<div class="viewcode-block" id="IDN.list_sources"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.list_sources">[docs]</a>    <span class="k">def</span> <span class="nf">list_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all sources&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">sources</span></div>
+
+<div class="viewcode-block" id="IDN.run_acct_aggregation"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.run_acct_aggregation">[docs]</a>    <span class="k">def</span> <span class="nf">run_acct_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_name</span><span class="p">,</span> <span class="n">optimized</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs an account aggregation for a source</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        source_name: string</span>
+<span class="sd">            The name of the source to run the aggregation for.</span>
+
+<span class="sd">        optimized: boolean</span>
+<span class="sd">            If True this will be an optimized aggregation, if False it will</span>
+<span class="sd">            do a non-optimized aggregation.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        dict: The result of the API call</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">disable_opt</span> <span class="o">=</span> <span class="n">optimized</span>
+
+        <span class="c1"># Invert for the parameter in the API</span>
+        <span class="k">if</span> <span class="n">disable_opt</span><span class="p">:</span>
+            <span class="n">disable_opt</span> <span class="o">=</span> <span class="s1">&#39;false&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">disable_opt</span> <span class="o">=</span> <span class="s1">&#39;true&#39;</span>
+
+        <span class="n">cloud_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sourceid_for_name</span><span class="p">(</span>
+            <span class="n">source_name</span><span class="p">,</span> <span class="n">id_type</span><span class="o">=</span><span class="s1">&#39;cloudExternalId&#39;</span>
+        <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running aggregation on cloudID: </span><span class="si">{</span><span class="n">cloud_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;source/loadAccounts/</span><span class="si">{</span><span class="n">cloud_id</span><span class="si">}</span><span class="s1">?disableOptimization=</span><span class="si">{</span><span class="n">disable_opt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+            <span class="n">api</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">ret_json</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret_json</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret_json</span></div>
+
+<div class="viewcode-block" id="IDN.get_sourceid_for_name"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.get_sourceid_for_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_sourceid_for_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">id_type</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the source ID based on name of the source</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        name: string</span>
+<span class="sd">            The name of the source</span>
+
+<span class="sd">        id_type: string</span>
+<span class="sd">            The key of the specific ID you want to return. Type of ID to get,</span>
+<span class="sd">            could be &quot;id&quot; or &quot;cloudExternalId&quot;</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        id: string</span>
+<span class="sd">            The ID</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">all_sources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">all_sources</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">id_type</span> <span class="o">==</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;connectorAttributes&#39;</span><span class="p">][</span><span class="s1">&#39;cloudExternalId&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="IDN.update_approval"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.util.IDN.update_approval">[docs]</a>    <span class="k">def</span> <span class="nf">update_approval</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">approval_id</span><span class="p">,</span>
+        <span class="n">new_owner</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;reject&#39;</span><span class="p">,</span>
+        <span class="n">reason</span><span class="o">=</span><span class="s1">&#39;The approval has been reassigned&#39;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reassigns an approval to a different user</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        approval_id: string</span>
+<span class="sd">            The ID of the approval to reassign as retrieved from</span>
+<span class="sd">            access-request_approvals</span>
+
+<span class="sd">        action: string</span>
+<span class="sd">            One of the following:</span>
+
+<span class="sd">                approve - Approve an access request approval. Only the owner</span>
+<span class="sd">                    of the approval and admin users are allowed to perform</span>
+<span class="sd">                    this action.</span>
+
+<span class="sd">                reject - Rejects an access request approval. Only the owner</span>
+<span class="sd">                    of the approval and admin users are allowed to perform</span>
+<span class="sd">                    this action.</span>
+
+<span class="sd">                forward - Reassigns (Forwards) an access request approval to</span>
+<span class="sd">                    a new owner. Only the owner of the approval and ORG_ADMIN</span>
+<span class="sd">                    users are allowed to perform this action.</span>
+
+
+<span class="sd">        new_owner: string</span>
+<span class="sd">            The ID of the person who the approval will be reassigned to. Only</span>
+<span class="sd">            used if action is &quot;forward&quot;.</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        --------------------</span>
+<span class="sd">        ret: 202 is success anything else you better check</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;comment&#39;</span><span class="p">:</span> <span class="n">reason</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;forward&#39;</span><span class="p">:</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;newOwnerId&#39;</span><span class="p">:</span> <span class="n">new_owner</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;access-request-approvals/</span><span class="si">{</span><span class="n">approval_id</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+            <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+            <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v3&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># print(ret.json())</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">sailpoint</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributions &amp; Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Dave Peters.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

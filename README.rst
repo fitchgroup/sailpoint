@@ -21,8 +21,15 @@ For full documentation about the IdentityNow API see https://developer.sailpoint
 Getting Started
 ====
 
-There is a Jupyter Notebook available in the `dist/docs` directory of the
-source which provides examples on how to use this package.
+Install the python module using pip:
+
+``pip install sailpoint-1.4-py3-none-any.whl``
+
+The wheel file can be found in the `dist` directory.
+
+Dcumentation as well as a Jupyter Notebook available in the `dist/docs`
+directory. This provides examples on how to use this package.
+
 
 
 Note
