@@ -267,8 +267,8 @@ on PyPI_, the following steps can be used to release a new version for
 .. |the repository service| replace:: GitHub
 .. |contribute button| replace:: "Create pull request"
 
-.. _repository: https://github.com/<USERNAME>/sailpoint
-.. _issue tracker: https://github.com/<USERNAME>/sailpoint/issues
+.. _repository: https://github.com/fitchgroup/sailpoint
+.. _issue tracker: https://github.com/fitchgroup/sailpoint/issues
 .. <-- end -->
 
 
