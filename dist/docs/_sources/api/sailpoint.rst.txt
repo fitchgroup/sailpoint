@@ -1,0 +1,45 @@
+sailpoint package
+=================
+
+Submodules
+----------
+
+sailpoint.api module
+--------------------
+
+.. automodule:: sailpoint.api
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sailpoint.report module
+-----------------------
+
+.. automodule:: sailpoint.report
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sailpoint.skeleton module
+-------------------------
+
+.. automodule:: sailpoint.skeleton
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sailpoint.util module
+---------------------
+
+.. automodule:: sailpoint.util
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: sailpoint
+   :members:
+   :undoc-members:
+   :show-inheritance:
