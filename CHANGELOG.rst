@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.4
+===========
+
+- Public release published to GitHub https://github.com/fitchgroup/sailpoint
+
 Version 1.3
 ===========
 
