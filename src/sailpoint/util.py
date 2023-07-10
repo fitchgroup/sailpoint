@@ -377,6 +377,54 @@ class IDN:
             log.error(ret.text)
             return none
 
+    def list_accounts_for_source(self, source_id=None, source_name=None):
+        """Lists accounts for a specific source
+
+        Parameters
+        --------------------
+        source_id: string
+            The ID of the source
+
+        source_name: string
+            The Name of the source
+
+        Either the name or the ID must be specified
+
+        Returns
+        --------------------
+        accounts: generator of dicts
+            The accounts
+
+        """
+
+        if not source_id:
+            source_id = self.get_sourceid_for_name(source_name)
+
+        log.debug(f'Getting accounts for source: {source_id}')
+        # parameters = f'filters=source.id in ("{source_id}")'
+        parameters = f'filters=sourceId eq "{source_id}"'
+
+        offset = 0
+
+        while True:
+            ret = self.api(f'accounts?offset={offset}&limit=250&{parameters}')
+            log.debug(ret)
+            log.debug(ret.text)
+            log.debug(ret.status_code)
+            if ret.status_code == 200:
+                accounts = ret.json()
+
+                if len(accounts) == 0:
+                    break
+
+                for ap in accounts:
+                    offset += 1
+                    yield (ap)
+            else:
+                log.warning(ret.text)
+                log.warning(ret.status_code)
+                log.warning('Did not get 200 status_code - retrying')
+
     def get_aps_for_source(self, source_id=None, source_name=None):
         """Get access profiles for a specific source
 
@@ -1009,11 +1057,17 @@ class IDN:
         #        ids = ret.json()
         #        log.debug(str(ids))
         #        return ids
-        offset = 0
 
+        if 'sort' not in payload:
+            payload['sort'] = ['id']
+
+        search_after = []
         while True:
+            if search_after:
+                payload['searchAfter'] = search_after
+
             ret = self.api(
-                f'search?offset={offset}&limit=250',
+                f'search?limit=250',
                 payload=payload,
                 method='POST',
             )
@@ -1027,8 +1081,12 @@ class IDN:
                     break
 
                 for r in results:
-                    offset += 1
                     yield (r)
+                    search_after = []
+                    # should fix this to run only on last result
+                    for sort_idx in payload['sort']:
+                        search_after.append(r.get(sort_idx))
+
             else:
                 log.warning(ret.text)
                 log.warning(ret.status_code)
