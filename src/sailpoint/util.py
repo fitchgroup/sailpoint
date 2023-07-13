@@ -302,6 +302,8 @@ class IDN:
         owner_email=None,
         enabled=True,
         entitlements=[],
+        comments_required=False,
+        denial_comments_required=False,
     ):
         """Creates an Access Profile
 
@@ -330,6 +332,15 @@ class IDN:
         entitlements: list of entitlement dicts (id, name, type)
             The list of entitlements that are included in this Access Profile
 
+        comments_required: boolean
+            Whether the requester of the containing object must provide
+            comments justifying the request
+
+        denial_comments_required: boolean
+            Whether an approver must provide comments when denying the
+            request
+
+
         Returns
         --------------------
         return: json - output from the api call
@@ -356,8 +367,8 @@ class IDN:
             "entitlements": entitlements,
             "requestable": True,
             "accessRequestConfig": {
-                "commentsRequired": True,
-                "denialCommentsRequired": False,
+                "commentsRequired": comments_required,
+                "denialCommentsRequired": denial_comments_required,
                 "approvalSchemes": [
                     {
                         "approverType": "MANAGER",
@@ -375,7 +386,7 @@ class IDN:
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def list_accounts_for_source(self, source_id=None, source_name=None):
         """Lists accounts for a specific source
