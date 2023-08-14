@@ -143,6 +143,53 @@ class IDN:
         log.debug(str(org))
         return org
 
+    def list_source_attributes(self, source_id=None, source_name=None):
+        """List source attributes from source sync config
+
+        Parameters
+        --------------------
+        source_id: string
+            The ID of the source
+
+        source_name: string
+            The Name of the source
+
+        Either the name or the ID must be specified
+
+
+        Returns
+        --------------------
+        attributes: dict
+            The attributes
+
+        """
+
+        if not source_id:
+            source_id = self.get_sourceid_for_name(source_name)
+
+        log.debug(f'Getting attributes for source: {source_id}')
+
+        # These are internal APIs they are not exposing:
+        # https://developer.sailpoint.com/discuss/t/get-campaign-reports-id-through-api/1017/8
+
+        ret = 'Not exposed by SailPoint'
+        #        ret = self.api(
+        #            f'sources/{source_id}/attribute-sync-config',
+        #            method='GET',
+        #            api='attr-sync',
+        #        )
+        #        ret = self.api(
+        #            f'provisioning/provisioningPolicies/{source_id}/Create',
+        #            method='GET',
+        #            api='mantis',
+        #        )
+
+        log.debug(ret)
+        log.debug(ret.text)
+        attributes = ret.json()
+        log.debug(str(attributes))
+        return attributes
+
     def list_identity_attributes_source(self):
         """List all identity attributes from profile source"""
         ret = self.api('identity-profiles', method='GET', api='beta')
