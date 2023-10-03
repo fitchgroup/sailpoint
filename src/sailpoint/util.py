@@ -45,7 +45,7 @@ class IDN:
             "description": description,
             "owner": {"id": owner_idn.get('id')},
         }
-        log.info('Creating Governance Group')
+        log.debug('Creating Governance Group')
         log.debug(payload)
         ret = self.api('workgroups', api='v2', method='POST', payload=payload)
         log.debug(ret)
@@ -139,7 +139,7 @@ class IDN:
         org = ret.json()
 
         #    for e in orgs:
-        #        log.info(e)
+        #        log.debug(e)
         log.debug(str(org))
         return org
 
@@ -250,7 +250,7 @@ class IDN:
         entitlement = ret.json()
 
         #    for e in entitlements:
-        #        log.info(e)
+        #        log.debug(e)
         log.debug(str(entitlement))
         return entitlement
 
@@ -325,13 +325,13 @@ class IDN:
             The Identity
 
         """
-        log.info('Getting id by login')
+        log.debug('Getting id by login')
         payload = {
             "query": {
                 "query": f"attributes.activeDirectoryUsername:\"{login}\""
             },
             "indices": ["identities"],
-            "includeNested": "False",
+            "includeNested": "True",
             "sort": ["displayName"],
         }
         log.debug(payload)
@@ -400,6 +400,9 @@ class IDN:
             owner_idn = self.get_user_by_email(owner_email)[0]
 
         source_id = self.get_sourceid_for_name(source_name)
+        if not source_id:
+            log.error('Did not create AP - could not get source')
+            return None
 
         payload = {
             "name": name,
@@ -423,7 +426,7 @@ class IDN:
                 ],
             },
         }
-        log.info('Creating Access Profile')
+        log.debug('Creating Access Profile')
         log.debug(pretty_repr(payload))
         log.debug(json.dumps(payload))
         ret = self.api('access-profiles', method='POST', payload=payload)
@@ -577,14 +580,14 @@ class IDN:
         #            }
         #        ],
         #    }
-        #    log.info(payload)
+        #    log.debug(payload)
         #    ret = self.api(
         #        'entitlements/bulk-update', payload=payload,
         #         method='POST', api='beta'
         #    )
         #
-        #    log.info('Result of bulk update')
-        #    log.info(ret.json())
+        #    log.debug('Result of bulk update')
+        #    log.debug(ret.json())
 
         #    # The following PATCH method on dscription results in
         #    # 'Illegal attempt to modify "description" field.'
@@ -597,7 +600,7 @@ class IDN:
         #            "value": "My Test Update",
         #        }
         #    ]
-        #    log.info(payload)
+        #    log.debug(payload)
         #    ret = self.api(
         #        f'entitlements/{entitlement_id}',
         #        payload=payload,
@@ -606,8 +609,8 @@ class IDN:
         #        api='beta',
         #    )
         #
-        #    log.info('Result of PATCH update')
-        #    log.info(ret.json())
+        #    log.debug('Result of PATCH update')
+        #    log.debug(ret.json())
 
         # first get it in its existing state
         entitlement = ret.json()
@@ -669,7 +672,7 @@ class IDN:
 
     def list_apps(self):
         """List all apps from IDN for the org (aka. Tennant)"""
-        log.info('list_apps - start')
+        log.debug('list_apps - start')
         ret = self.api('app/list?filter=org', api='cc')
         try:
             log.debug(pretty_repr(ret.json()))
@@ -705,7 +708,7 @@ class IDN:
             The access profile and its attributes
 
         """
-        log.info(f'Getting Access Profile: {ap_name} - {ap_id}')
+        log.debug(f'Getting Access Profile: {ap_name} - {ap_id}')
 
         if ap_name:
             get_aps = []
@@ -770,13 +773,13 @@ class IDN:
             The aplication and its attributes
 
         """
-        log.info('update ap- start')
+        log.debug('update_ap - start')
 
         payload = [
             {
                 "op": "replace",
                 "path": f"/{parameter}",
-                "value": f"{value}",
+                "value": value,
             }
         ]
         log.debug(ap_id)
@@ -825,7 +828,7 @@ class IDN:
             The application and its attributes
 
         """
-        log.info('get_app - start')
+        log.debug('get_app - start')
 
         if app_name:
             log.debug(f'Searching for app: [{app_name}]')
@@ -888,7 +891,7 @@ class IDN:
             The application with its status
 
         """
-        log.info('create_app - start')
+        log.debug('create_app - start')
 
         payload = {
             'name': name,
@@ -929,7 +932,7 @@ class IDN:
             The application and its attributes
 
         """
-        log.info('update app- start')
+        log.debug('update app- start')
 
         payload = {
             parameter: value,
@@ -975,7 +978,7 @@ class IDN:
             The application with its status
 
         """
-        log.info('delete_app - start')
+        log.debug('delete_app - start')
 
         if app_name:
             delete_apps = []
@@ -1036,7 +1039,7 @@ class IDN:
             The Identity of the owner
 
         """
-        log.info('get_app_owner - start')
+        log.debug('get_app_owner - start')
         log.debug(f'getting app: {app_name}')
         payload = {
             "indices": ["identities"],
@@ -1072,7 +1075,7 @@ class IDN:
             The access profiles that are part of the application requested.
 
         """
-        log.info('get_app - start')
+        log.debug('get_app - start')
         ret = self.api(f'app/getAccessProfiles/{app_id}', api='cc')
 
         try:
@@ -1293,7 +1296,7 @@ class IDN:
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def get_sourceid_for_name(self, name, id_type='id'):
         """Gets the source ID based on name of the source
@@ -1313,8 +1316,15 @@ class IDN:
             The ID
 
         """
+        sources = self.api('sources')
+        try:
+            all_sources = sources.json()
+        except Exception as e:
+            log.error(e)
+            log.error(sources.status_code)
+            log.error(sources.text)
+            return None
 
-        all_sources = self.api('sources').json()
         for s in all_sources:
             if s.get('name') == name:
                 log.debug(pretty_repr(s))
