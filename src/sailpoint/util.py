@@ -351,6 +351,7 @@ class IDN:
         entitlements=[],
         comments_required=False,
         denial_comments_required=False,
+        requestable=True,
     ):
         """Creates an Access Profile
 
@@ -374,19 +375,21 @@ class IDN:
             The source of the Access Profile specified by its name
 
         enabled: boolean
-            If the Access Profile is enabled or not
+            If the Access Profile is enabled or not. Default True
 
         entitlements: list of entitlement dicts (id, name, type)
             The list of entitlements that are included in this Access Profile
 
         comments_required: boolean
             Whether the requester of the containing object must provide
-            comments justifying the request
+            comments justifying the request. Default False
 
         denial_comments_required: boolean
             Whether an approver must provide comments when denying the
-            request
+            request. Default False
 
+        requestable: boolean
+            Whether the AP should be requestable. Default True
 
         Returns
         --------------------
@@ -415,7 +418,7 @@ class IDN:
             },
             "source": {"id": source_id, "type": "SOURCE", "name": source_name},
             "entitlements": entitlements,
-            "requestable": True,
+            "requestable": requestable,
             "accessRequestConfig": {
                 "commentsRequired": comments_required,
                 "denialCommentsRequired": denial_comments_required,
