@@ -1090,7 +1090,7 @@ class IDN:
             return None
 
     def search(self, payload):
-        """Runs a generic search
+        """Runs a generic search (paged)
 
         You must provide the full payload.
 
@@ -1113,7 +1113,7 @@ class IDN:
 
         Results
         --------------------
-        dict: the result
+        yeilds results
         """
 
         #        log.debug(payload)
@@ -1396,6 +1396,66 @@ class IDN:
         # print(ret.json())
         log.debug(ret)
         return ret
+
+    def main_search(self, thing):
+        """Generic search for things
+
+        Parameters
+        --------------------
+        things: string
+
+            Could be  accessprofiles, identities, entitlements etc.
+        """
+        out = {}
+        payload = {
+            "query": {"query": "*"},
+            "indices": [thing],
+        }
+        ret = self.search(payload)
+        for r in ret:
+            # log.debug(pretty(r))
+            out[r.get('id')] = r
+            pass
+
+        # out is indexed by ID
+        return out
+
+    def get_all_aps(self):
+        """Gets all Access Profiles indexed by guid"""
+        log.info('Getting access profiles')
+        out = self.main_search('accessprofiles')
+        log.info('Done getting access profiles')
+        log.info(f'Number of access profiles: {len(out)}')
+        return out
+
+    def get_all_apps(self, access_profiles):
+        """Gets all Applications via the access profiles.
+
+        Provides applications indexed by Application guid and includes which
+        Access Profiles are attached.
+
+        """
+        out_apps = {}
+        for ap_id, ap in access_profiles.items():
+            for app in ap.get('apps', []):
+                app_id = app.get('id')
+
+                if app_id not in out_apps:
+                    out_apps[app_id] = app
+        return out_apps
+
+    def get_all_entitlements(self):
+        """Gets all entitlements indexed by guid"""
+        log.info('Getting entitlements')
+        out = {}
+        for s in self.list_sources():
+            for e in self.get_entitlements_for_source(s.get('id')):
+                out[e.get('id')] = e
+
+        # out = main_search('entitlements')
+        log.info('Done getting entitlements')
+        log.info(f'Number of entitlements: {len(out)}')
+        return out
 
 
 if __name__ == '__main__':
