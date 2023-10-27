@@ -204,6 +204,37 @@ class IDN:
         log.debug(str(attributes))
         return attributes
 
+    def remove_account_from_id(self, account_id):
+        """Removes an account from an Identity
+
+        Parameters
+        --------------------
+        account_id: string
+            The if of the account
+
+        Returns
+        --------------------
+        Dict:
+        'pendingCisTasks': False - Means it worked
+        'pendingCisTasks': True - Means it failed because there are pending
+        tasks being processed
+
+        """
+        try:
+            ret = self.api(
+                f'account/remove/{account_id}', method='POST', api='cc'
+            )
+            log.debug(ret)
+            log.debug(ret.text)
+            log.debug(ret.status_code)
+            return ret.json()
+        except Exception as e:
+            log.error(ret)
+            log.error(ret.text)
+            log.error(ret.status_code)
+            log.error(e)
+            return False
+
     def get_attribute_map(self, map_source):
         """Gets the attribute map"""
         target_attrs = self.list_identity_attributes()
@@ -257,7 +288,7 @@ class IDN:
     def get_entitlements_for_source(
         self, source_id, search_item='name', search_name=None
     ):
-        """Gets entitlements for source
+        """Gets entitlements for source - generator
 
         Parameters
         --------------------
@@ -275,7 +306,7 @@ class IDN:
 
         Returns
         --------------------
-        entitlements: generator of dicts
+        yields entitlements: generator of dicts
             The entitlements
 
         """
@@ -311,13 +342,16 @@ class IDN:
                 log.warning(ret.status_code)
                 log.warning('Did not get 200 status_code - retrying')
 
-    def get_id_by_login(self, login):
+    def get_id_by_login(self, login, include_nested=False):
         """Gets an Identity for the login specified
 
         Parameters
         --------------------
         login: string
             The login for the identity you want to retrieve
+
+        include_nested: boolean
+            Will include nested objects
 
         Returns
         --------------------
@@ -331,7 +365,7 @@ class IDN:
                 "query": f"attributes.activeDirectoryUsername:\"{login}\""
             },
             "indices": ["identities"],
-            "includeNested": "True",
+            "includeNested": include_nested,
             "sort": ["displayName"],
         }
         log.debug(payload)
@@ -490,7 +524,7 @@ class IDN:
                 log.warning('Did not get 200 status_code - retrying')
 
     def get_aps_for_source(self, source_id=None, source_name=None):
-        """Get access profiles for a specific source
+        """Get access profiles for a specific source - generator
 
         Parameters
         --------------------
@@ -536,9 +570,9 @@ class IDN:
                     offset += 1
                     yield (ap)
             else:
-                log.warning(ret.text)
-                log.warning(ret.status_code)
-                log.warning('Did not get 200 status_code - retrying')
+                log.debug(ret.text)
+                log.debug(ret.status_code)
+                log.debug('Did not get 200 status_code - retrying')
 
     def update_entitlement(self, entitlement_id, attr='description', val=''):
         """Used to update the entitlement.
@@ -1089,8 +1123,8 @@ class IDN:
             log.error(ret.text)
             return None
 
-    def search(self, payload):
-        """Runs a generic search (paged)
+    def search(self, payload, sort='id'):
+        """Runs a generic search - generator
 
         You must provide the full payload.
 
@@ -1111,9 +1145,12 @@ class IDN:
         payload: dict
             The full search payload
 
+        sort: string
+            The key to sort on. Default is 'id'
+
         Results
         --------------------
-        yeilds results
+        yields dict: the result
         """
 
         #        log.debug(payload)
@@ -1121,17 +1158,19 @@ class IDN:
         #        ids = ret.json()
         #        log.debug(str(ids))
         #        return ids
+        # Dont use offset, use last_id as searchAfter instead
+        # offset = 0
 
-        if 'sort' not in payload:
-            payload['sort'] = ['id']
+        search_after = None
 
-        search_after = []
         while True:
             if search_after:
-                payload['searchAfter'] = search_after
+                payload['searchAfter'] = [search_after]
+
+            payload['sort'] = [sort]
 
             ret = self.api(
-                f'search?limit=250',
+                'search?&limit=250',
                 payload=payload,
                 method='POST',
             )
@@ -1143,20 +1182,24 @@ class IDN:
 
                 if len(results) == 0:
                     break
-
                 for r in results:
+                    search_after = r.get(sort)
                     yield (r)
-                    search_after = []
-                    # should fix this to run only on last result
-                    for sort_idx in payload['sort']:
-                        search_after.append(r.get(sort_idx))
 
-            else:
+            elif ret.status_code == 400:
+                # maybe searching past offset limit?
                 log.warning(ret.text)
                 log.warning(ret.status_code)
-                log.warning('Did not get 200 status_code - retrying')
+                log.warning('Probably you have hit the offset limit')
+                # just finish
+                break
 
-    def get_user_by_email(self, email):
+            else:
+                log.debug(ret.text)
+                log.debug(ret.status_code)
+                log.debug('Did not get 200 status_code - retrying')
+
+    def get_user_by_email(self, email, include_nested=False):
         """Gets the user by their email
 
         Search is case insensitive
@@ -1165,6 +1208,9 @@ class IDN:
         --------------------
         name: string
             The email to search
+
+        include_nested: boolean
+            Will include nested objects
 
         Results
         --------------------
@@ -1180,6 +1226,7 @@ class IDN:
         payload = {
             "query": {"query": f"attributes.activeDirectoryEmail\"{email}\""},
             "indices": ["identities"],
+            "includeNested": include_nested,
         }
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
@@ -1191,7 +1238,7 @@ class IDN:
             log.error(ret.text)
             return None
 
-    def get_user_by_name(self, name):
+    def get_user_by_name(self, name, include_nested=False):
         """Gets the user by their name
 
         You can also include wildcards such as: Dave*
@@ -1202,6 +1249,9 @@ class IDN:
         name: string
             The name to search
 
+        include_nested: boolean
+            Will include nested objects
+
         Results
         --------------------
         identities: list of identities
@@ -1210,6 +1260,7 @@ class IDN:
         payload = {
             "query": {"query": f"displayName:\"{name}\""},
             "indices": ["identities"],
+            "includeNested": include_nested,
         }
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
