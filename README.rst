@@ -16,7 +16,7 @@ which removes the need to call each of the lower level APIs calls, or know
 which particular API you need to call.
 
 Documentation
-===
+================
 Documentation as well as a Jupyter Notebook is available in the `dist/docs`
 directory of the source.
 
@@ -32,17 +32,17 @@ For full documentation about the IdentityNow API see https://developer.sailpoint
 
 
 Getting Started
-====
+================
 
 Install the python module using pip:
 
-``pip install sailpoint-1.4-py3-none-any.whl``
+``pip install sailpoint-1.5-py3-none-any.whl``
 
 The wheel file can be found in the `dist` directory.
 
 
 Note
-====
+================
 
 This project has been set up using PyScaffold 4.4. For details and usage
 information on PyScaffold see https://pyscaffold.org/.

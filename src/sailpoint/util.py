@@ -1152,15 +1152,6 @@ class IDN:
         --------------------
         yields dict: the result
         """
-
-        #        log.debug(payload)
-        #        ret = self.api('search', method='POST', payload=payload)
-        #        ids = ret.json()
-        #        log.debug(str(ids))
-        #        return ids
-        # Dont use offset, use last_id as searchAfter instead
-        # offset = 0
-
         search_after = None
 
         while True:

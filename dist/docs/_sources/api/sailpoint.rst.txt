@@ -20,14 +20,6 @@ sailpoint.report module
    :undoc-members:
    :show-inheritance:
 
-sailpoint.skeleton module
--------------------------
-
-.. automodule:: sailpoint.skeleton
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 sailpoint.util module
 ---------------------
 
