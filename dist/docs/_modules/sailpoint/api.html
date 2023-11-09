@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>sailpoint.api &#8212; sailpoint 1.2.post1.dev0+gb5a894e.d20230530 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <title>sailpoint.api &#8212; sailpoint 1.5.post1.dev0+gbfea59d.d20231107 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=233b9934" />
+    <script src="../../_static/documentation_options.js?v=de7c67dd"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -33,6 +33,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -47,7 +48,9 @@
     <span class="n">zscaler_cert_file</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="IDNApi"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi">[docs]</a><span class="k">class</span> <span class="nc">IDNApi</span><span class="p">:</span>
+<div class="viewcode-block" id="IDNApi">
+<a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi">[docs]</a>
+<span class="k">class</span> <span class="nc">IDNApi</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tenant</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># If the API settings didn&#39;t come from instantiation then get from</span>
         <span class="c1"># config</span>
@@ -67,7 +70,7 @@
             <span class="sa">f</span><span class="s1">&#39;&amp;client_secret=</span><span class="si">{</span><span class="n">secret</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">)</span>
 
-        <span class="c1"># log.info(f&#39;curl --request POST --url {url}&#39;)</span>
+        <span class="c1"># log.debug(f&#39;curl --request POST --url {url}&#39;)</span>
         <span class="k">if</span> <span class="n">zscaler_cert_file</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -79,10 +82,12 @@
                 <span class="c1">#            ),</span>
             <span class="p">)</span>
 
-        <span class="c1"># log.info(x.json())</span>
+        <span class="c1"># log.debug(x.json())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;access_token&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-<div class="viewcode-block" id="IDNApi.get_api_config"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi.get_api_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_api_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IDNApi.get_api_config">
+<a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi.get_api_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_api_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">),</span> <span class="s1">&#39;.idn_api&#39;</span><span class="p">)</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -97,7 +102,10 @@
             <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="IDNApi.r"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi.r">[docs]</a>    <span class="k">def</span> <span class="nf">r</span><span class="p">(</span>
+
+<div class="viewcode-block" id="IDNApi.r">
+<a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi.r">[docs]</a>
+    <span class="k">def</span> <span class="nf">r</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">endpoint</span><span class="p">,</span>
         <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span>
@@ -109,6 +117,9 @@
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        r - Request something from the API</span>
+<span class="sd">            - Will only return top 250 max</span>
+<span class="sd">            - You can pass offset and limit manually as part of the endpoint</span>
+<span class="sd">              string to overcome this</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">api</span> <span class="o">==</span> <span class="s1">&#39;cc&#39;</span><span class="p">:</span>
@@ -129,33 +140,48 @@
         <span class="c1"># quit()</span>
 
         <span class="k">if</span> <span class="n">zscaler_cert_file</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
-                <span class="n">method</span><span class="p">,</span>
-                <span class="n">url</span><span class="p">,</span>
-                <span class="n">headers</span><span class="o">=</span><span class="n">default_headers</span><span class="p">,</span>
-                <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
-                <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">,</span>
-                <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>  <span class="c1"># try up to 5 times</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+                        <span class="n">method</span><span class="p">,</span>
+                        <span class="n">url</span><span class="p">,</span>
+                        <span class="n">headers</span><span class="o">=</span><span class="n">default_headers</span><span class="p">,</span>
+                        <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+                        <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">,</span>
+                        <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Sleeping 300ms and trying again up to 5 times&#39;</span><span class="p">)</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">300</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
+                    <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
-                <span class="n">method</span><span class="p">,</span>
-                <span class="n">url</span><span class="p">,</span>
-                <span class="n">headers</span><span class="o">=</span><span class="n">default_headers</span><span class="p">,</span>
-                <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
-                <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
-                <span class="c1">#            proxies=dict(</span>
-                <span class="c1">#                http=&#39;socks5://localhost:8888&#39;,</span>
-                <span class="c1">#                https=&#39;socks5://localhost:8888&#39;</span>
-                <span class="c1">#            ),</span>
-            <span class="p">)</span>
-        <span class="c1">#        log.info(response)</span>
-        <span class="c1">#        log.info(response.text)</span>
-        <span class="c1">#        log.info(response.json())</span>
-        <span class="k">return</span> <span class="n">response</span></div></div>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>  <span class="c1"># try up to 5 times</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+                        <span class="n">method</span><span class="p">,</span>
+                        <span class="n">url</span><span class="p">,</span>
+                        <span class="n">headers</span><span class="o">=</span><span class="n">default_headers</span><span class="p">,</span>
+                        <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+                        <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Sleeping 300ms and trying again up to 5 times&#39;</span><span class="p">)</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">300</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
+                    <span class="k">pass</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+</div>
 
 
-<div class="viewcode-block" id="set_disableOrderingCheck"><a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.set_disableOrderingCheck">[docs]</a><span class="k">def</span> <span class="nf">set_disableOrderingCheck</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">source_id</span><span class="p">):</span>
+
+<div class="viewcode-block" id="set_disableOrderingCheck">
+<a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.set_disableOrderingCheck">[docs]</a>
+<span class="k">def</span> <span class="nf">set_disableOrderingCheck</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">source_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    set_disableOrderingCheck</span>
 
@@ -179,82 +205,14 @@
         <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
         <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">quit</span><span class="p">()</span>
-    <span class="n">api</span> <span class="o">=</span> <span class="n">IDNApi</span><span class="p">()</span>
-    <span class="c1"># api.r(&#39;public-identities&#39;)</span>
-    <span class="c1"># api.r(&#39;accounts&#39;)</span>
-    <span class="c1"># api.r(&#39;identities&#39;, method=&#39;POST&#39;)</span>
-
-    <span class="c1">#    # Get connector rules</span>
-    <span class="c1">#    ret = api.r(f&#39;connector-rules&#39;, api=&#39;beta&#39;)</span>
-    <span class="c1">#    log.info(ret)</span>
-    <span class="c1">#    quit()</span>
-
-    <span class="c1"># ret = api.r(&#39;sources&#39;)</span>
-    <span class="c1"># log.info(ret.json())</span>
-
-    <span class="c1">#    # RAC Module</span>
-    <span class="c1">#    source_id = &#39;953af34c11f54e59ad55ca0fb0ded417&#39;</span>
-    <span class="c1">#    set_disableOrderingCheck(api, source_id)</span>
-
-    <span class="n">quit</span><span class="p">()</span>
-
-    <span class="c1"># Get connector rule by ID</span>
-    <span class="n">connector_rule</span> <span class="o">=</span> <span class="s1">&#39;fa488de1772f4059b8cd81bdf1940de6&#39;</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">r</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;connector-rules/</span><span class="si">{</span><span class="n">connector_rule</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-    <span class="c1"># log.info the source code for the connector rule</span>
-    <span class="n">ret_json</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-    <span class="n">source</span> <span class="o">=</span> <span class="n">ret_json</span><span class="p">[</span><span class="s1">&#39;sourceCode&#39;</span><span class="p">][</span><span class="s1">&#39;script&#39;</span><span class="p">]</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">quit</span><span class="p">()</span>
-
-    <span class="c1"># Transforms</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">r</span><span class="p">(</span><span class="s1">&#39;transforms&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v3&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
-    <span class="n">quit</span><span class="p">()</span>
-
-    <span class="c1"># Get provisioning policies</span>
-    <span class="n">some_id</span> <span class="o">=</span> <span class="s1">&#39;26820&#39;</span>  <span class="c1"># cloud ID</span>
-    <span class="n">some_id</span> <span class="o">=</span> <span class="s1">&#39;50fc360f905543f9bd681a2e6b45169f&#39;</span>  <span class="c1"># just the id</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">r</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sources/</span><span class="si">{</span><span class="n">some_id</span><span class="si">}</span><span class="s1">/provisioning-policies/CREATE&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-    <span class="n">quit</span><span class="p">()</span>
-
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">r</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-    <span class="n">quit</span><span class="p">()</span>
-
-    <span class="c1"># 26821 - GWC</span>
-    <span class="c1">#    api.r(&#39;IdentityAttribute/list&#39;, api=&#39;cc&#39;)</span>
-
-    <span class="c1"># Non optimized aggregation</span>
-    <span class="c1">#     api.r(</span>
-    <span class="c1">#         &#39;source/loadAccounts/26820?disableOptimization=true</span>
-    <span class="c1">#         method=&#39;POST&#39;,</span>
-    <span class="c1">#         api=&#39;cc&#39;,</span>
-    <span class="c1">#     )</span>
-
-    <span class="c1"># Transforms</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">r</span><span class="p">(</span><span class="s1">&#39;transforms/428e5ce0-c9f7-45e2-b6af-642d36057dfe&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v3&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-    <span class="n">quit</span><span class="p">()</span>
-
-    <span class="c1"># Access Profiles</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">r</span><span class="p">(</span><span class="s1">&#39;access-profiles&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-    <span class="n">quit</span><span class="p">()</span>
-
-    <span class="c1"># Governance groups API</span>
-    <span class="c1"># https://developer.sailpoint.com/discuss/t/rest-apis-for-managing-governance-groups/925</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">r</span><span class="p">(</span><span class="s1">&#39;workgroups&#39;</span><span class="p">,</span> <span class="n">api</span><span class="o">=</span><span class="s1">&#39;v2&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+    <span class="k">pass</span>
 </pre></div>
 
           </div>
@@ -317,7 +275,7 @@
       &copy;2023, Dave Peters.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
