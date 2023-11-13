@@ -2,6 +2,7 @@ import requests
 import os
 import logging
 import json
+import time
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class IDNApi:
             f'&client_secret={secret}'
         )
 
-        # log.info(f'curl --request POST --url {url}')
+        # log.debug(f'curl --request POST --url {url}')
         if zscaler_cert_file:
             x = requests.post(url, verify=zscaler_cert_file)
         else:
@@ -48,7 +49,7 @@ class IDNApi:
                 #            ),
             )
 
-        # log.info(x.json())
+        # log.debug(x.json())
         self.token = x.json().get('access_token', None)
 
     def get_api_config(self):
@@ -78,6 +79,9 @@ class IDNApi:
     ):
         """
         r - Request something from the API
+            - Will only return top 250 max
+            - You can pass offset and limit manually as part of the endpoint
+              string to overcome this
         """
 
         if api == 'cc':
@@ -98,29 +102,40 @@ class IDNApi:
         # quit()
 
         if zscaler_cert_file:
-            response = requests.request(
-                method,
-                url,
-                headers=default_headers,
-                files=files,
-                verify=zscaler_cert_file,
-                json=payload,
-            )
+            for _ in range(5):  # try up to 5 times
+                try:
+                    response = requests.request(
+                        method,
+                        url,
+                        headers=default_headers,
+                        files=files,
+                        verify=zscaler_cert_file,
+                        json=payload,
+                    )
+                    break
+                except Exception as e:
+                    log.error(e)
+                    log.error('Sleeping 300ms and trying again up to 5 times')
+                    time.sleep(300 / 1000)  # sleep for 300ms
+                    pass
         else:
-            response = requests.request(
-                method,
-                url,
-                headers=default_headers,
-                files=files,
-                json=payload,
-                #            proxies=dict(
-                #                http='socks5://localhost:8888',
-                #                https='socks5://localhost:8888'
-                #            ),
-            )
-        #        log.info(response)
-        #        log.info(response.text)
-        #        log.info(response.json())
+            for _ in range(5):  # try up to 5 times
+                try:
+                    response = requests.request(
+                        method,
+                        url,
+                        headers=default_headers,
+                        files=files,
+                        json=payload,
+                    )
+                    break
+                except Exception as e:
+                    log.error(e)
+                    log.error('Sleeping 300ms and trying again up to 5 times')
+                    time.sleep(300 / 1000)  # sleep for 300ms
+                    pass
+        log.debug(response)
+        log.debug(response.text)
         return response
 
 
@@ -148,9 +163,9 @@ def set_disableOrderingCheck(api, source_id):
         headers=headers,
         payload=payload,
     )
-    log.info(ret)
-    log.info(ret.text)
-    log.info(ret.json())
+    log.debug(ret)
+    log.debug(ret.text)
+    log.debug(ret.json())
 
 
 if __name__ == '__main__':
