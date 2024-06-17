@@ -5,7 +5,7 @@ import csv
 import json
 
 # from rich.str import str_repr as str
-from rich.pretty import pretty_repr
+from rich.pretty import pretty_repr as pretty
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class IDN:
         self.api = idn_api.r
         pass
 
-    def create_gg(self, name, description, owner_id):
+    def create_gg(self, name, description, owner_id=None, owner_login=None):
         """Creates a Governance Group
 
         Parameters
@@ -27,8 +27,11 @@ class IDN:
         description: string
             The description for the Governance Group
 
-        owner_id: string
-            The Owner of the Access Profile specified by their loginID
+        owner_id: string (optional)
+            The ID of the Owner of the Governance Group (guid)
+
+        owner_login: string (optional)
+            The Owner of the Governance Group specified by their loginID
             (sAMAccountName)
 
 
@@ -38,7 +41,14 @@ class IDN:
 
         """
 
-        owner_idn = self.get_id_by_login(owner_id)[0]
+        if owner_id:
+            pass
+            owner_idn = self.get_user_by_id(owner_id)
+        elif owner_login:
+            owner_idn = self.get_id_by_login(owner_login)[0]
+        else:
+            log.error('Either owner_id or owner_login must be specified')
+            return False
 
         payload = {
             "name": name,
@@ -47,11 +57,24 @@ class IDN:
         }
         log.debug('Creating Governance Group')
         log.debug(payload)
-        ret = self.api('workgroups', api='v2', method='POST', payload=payload)
-        log.debug(ret)
-        log.debug(ret.text)
-        log.debug(ret.json())
-        return True
+        ret = self.api(
+            'workgroups', api='beta', method='POST', payload=payload
+        )
+        log.error(ret)
+        log.error(ret.text)
+        log.error(ret.json())
+
+        ret = self.get_gg(search_name=name, members=True)
+        out_g = []
+        for r in ret:
+            out_g.append(r)
+        if len(out_g) == 1:
+            return out_g[0]
+        else:
+            log.error(
+                f'Error creating groups. {len(out_g)} Groups with name: {name}'
+            )
+            return False
 
     def get_cc_id_for_id(self, idn_id):
         """
@@ -99,6 +122,172 @@ class IDN:
                 log.debug(i)
                 return i.get('id')
 
+    def delete_gg(self, ggid):
+        """Delete a Governance Group
+
+        Parameters
+        --------------------
+        ggid: string (required)
+            The ID of the governance group to delete
+
+        Returns
+        --------------------
+        True if Deleted
+
+        """
+
+        return False
+
+    def get_gg(
+        self, ggid=None, search_name=None, members=False, connections=False
+    ):
+        """Get Governance Groups - Generator
+
+        Parameters
+        --------------------
+        ggid: string (optional)
+            The ID of the governance group that you want to get
+
+        search_name: string (optional)
+            The exact name of the governance group that you want to get
+
+        members: boolean (default: False)
+            If you want to include the members of the governance group
+
+        connections: boolean (default: False)
+            If you want to include the connections of the governance group
+
+
+
+        Returns
+        --------------------
+        governance_groups: list - a list of matching governance groups
+
+        """
+        # get governance group
+        if ggid:
+            endpoint = f'workgroups/{ggid}'
+            ret = self.api(endpoint, api='beta')
+            try:
+                out = ret.json()
+                if members == True:
+                    members = self.get_gg_members(out.get('id'))
+                    out['members'] = members
+                if connections == True:
+                    connections = self.get_gg_connections(out.get('id'))
+                    out['connections'] = connections
+                yield out
+            except:
+                log.error(ret.status_code)
+                log.error(ret.text)
+                return None
+
+        else:
+            offset = 0
+            if search_name:
+                parameters = f'filters=name eq "{search_name}"'
+            else:
+                parameters = ''
+            log.info(parameters)
+
+            while True:
+                endpoint = f'workgroups?offset={offset}&limit=250&sorters=id&{parameters}'
+                ret = self.api(endpoint, api='beta')
+                log.info(ret)
+                if ret.status_code == 200:
+                    ggroups = ret.json()
+
+                    if len(ggroups) == 0:
+                        break
+
+                    for g in ggroups:
+                        offset += 1
+                        if members == True:
+                            g['members'] = self.get_gg_members(g.get('id'))
+                        if connections == True:
+                            g['connections'] = self.get_gg_connections(
+                                g.get('id')
+                            )
+                        yield (g)
+                else:
+                    log.warning(ret.text)
+                    log.warning(ret.status_code)
+                    log.warning('Did not get 200 status_code - retrying')
+
+    def del_gg_members(self, ggid, members):
+        """Delete Governance Group members
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group
+
+        members: list
+            List of members to delete, list of guids
+
+        Returns
+        --------------------
+        result json
+
+        """
+        # get governance group members
+        del_members = []
+        for m in members:
+            del_members.append({'id': m, 'type': 'IDENTITY'})
+
+            pass
+        ret = self.api(
+            f'workgroups/{ggid}/members/bulk-delete',
+            api='beta',
+            payload=del_members,
+            method='post',
+        )
+
+        try:
+            log.debug(pretty(ret.json()))
+            return ret.json()
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return None
+
+    def add_gg_members(self, ggid, members):
+        """Add Governance Group members
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group that you want to get the members
+            of
+        members: list
+            List of members to add, list of guids
+
+        Returns
+        --------------------
+        result json
+
+        """
+        # get governance group members
+        add_members = []
+        for m in members:
+            add_members.append({'id': m, 'type': 'IDENTITY'})
+
+            pass
+        ret = self.api(
+            f'workgroups/{ggid}/members/bulk-add',
+            api='beta',
+            payload=add_members,
+            method='post',
+        )
+
+        try:
+            log.debug(pretty(ret.json()))
+            return ret.json()
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return None
+
     def get_gg_members(self, ggid):
         """Get Governance Group members
 
@@ -114,15 +303,198 @@ class IDN:
 
         """
         # get governance group members
-        ret = self.api(f'workgroups/{ggid}/members', api='v2')
+        ret = self.api(f'workgroups/{ggid}/members', api='beta')
         # print(ret)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
             return None
+
+    def get_gg_connections(self, ggid):
+        """Get Governance Group connections
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group that you want to get the
+            connections for
+
+        Returns
+        --------------------
+        connections - NOTE: only returns first 50 offset not used
+
+        """
+        # get governance group members
+        ret = self.api(f'workgroups/{ggid}/connections', api='beta')
+        # print(ret)
+        try:
+            log.debug(pretty(ret.json()))
+            return ret.json()
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return None
+
+    def del_gg(self, ggid):
+        """Delete Governance Group
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group that you want to delete
+
+        Returns
+        --------------------
+        return status code
+
+        """
+        # get governance group members
+        ret = self.api(f'workgroups/{ggid}', method='delete', api='beta')
+        # print(ret)
+        try:
+            log.debug(ret.status_code)
+            log.error(ret.text)
+            return ret.status_code
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return ret.status_code
+
+    def update_idn_obj(self, idn_type, idn_id, op, path, value):
+        """Update an IDN Object
+            Basically any API object that supports patching an update with a
+            path.
+
+            For example:
+                - access-profiles
+                - workgroups (governance groups)
+                - entitlements
+                - roles
+                - sources
+
+
+
+        Parameters
+        --------------------
+        idn_type: string
+            The API object type you are setting:
+                - access-profiles
+                - workgroups (governance groups)
+                - entitlements
+                - roles
+                - sources
+
+        idn_id: string (optional)
+            The ID of the thing you are wanting to update
+
+        op: string (optional)
+            replace - as per API docs
+
+        path: string (optional)
+            example: /owner - must include preceding forward slash
+
+        value: string, list, dict - as per API docs
+            example:
+
+            owner = {'type': 'IDENTITY', 'id': transfer_user}
+
+
+        Returns
+        --------------------
+        json results
+
+        """
+        payload = [
+            {
+                'op': op,
+                'path': path,
+                'value': value,
+            }
+        ]
+        log.debug(pretty(op))
+        log.debug(pretty(idn_id))
+        log.debug(pretty(payload))
+        ret = self.api(
+            f'{idn_type}/{idn_id}',
+            method='PATCH',
+            api='beta',
+            payload=payload,
+            headers={'Content-Type': 'application/json-patch+json'},
+        )
+        log.debug(pretty(ret))
+        log.debug(pretty(ret.text))
+        log.debug(pretty(ret.json()))
+        return ret.json()
+
+    def get_api_obj(self, api_obj=None, idn_id=None, idn_name=None):
+        """Get something from the API
+            Basically any API object that supports both getting by ID or by
+            list with a filter.
+
+            For example:
+                - access-profiles
+                - workgroups (governance groups)
+                - sod-policies
+
+
+
+        Parameters
+        --------------------
+        api_obj : string
+            The API object type you are getting
+
+        idn_id: string (optional)
+            The ID of the thing you are wanting to get
+
+        idn_name: string (optional)
+            The exact name of the thing you want to get
+
+        Returns
+        --------------------
+        results: list - a list of matching things
+
+        """
+        # get api object
+        log.debug(f'Getting {api_obj}')
+        if idn_id:
+            endpoint = f'{api_obj}/{idn_id}'
+            ret = self.api(endpoint, api='beta')
+            try:
+                out = ret.json()
+                yield out
+            except:
+                log.error(ret.status_code)
+                log.error(ret.text)
+                return None
+
+        else:
+            offset = 0
+            if idn_name:
+                parameters = f'filters=name eq "{idn_name}"'
+            else:
+                parameters = ''
+            log.debug(parameters)
+
+            while True:
+                endpoint = f'{api_obj}?offset={offset}&limit=250&sorters=id&{parameters}'
+                ret = self.api(endpoint, api='beta')
+                log.debug(ret)
+                if ret.status_code == 200:
+                    ggroups = ret.json()
+
+                    if len(ggroups) == 0:
+                        break
+
+                    for g in ggroups:
+                        offset += 1
+                        yield (g)
+                else:
+                    log.warning(ret.text)
+                    log.warning(ret.status_code)
+                    log.warning('Did not get 200 status_code - retrying')
 
     def get_org(self):
         """Gets the org information
@@ -135,7 +507,7 @@ class IDN:
 
         log.debug('Getting tenant info')
 
-        ret = self.api('org', api='v2')
+        ret = self.api('tenant', api='beta')
         org = ret.json()
 
         #    for e in orgs:
@@ -251,7 +623,7 @@ class IDN:
             for a in source_attrs:
                 attr_name = a.get('identityAttributeName')
                 attr_map[attr_name] = {'source': a, 'dest': []}
-        log.debug(pretty_repr(target_attrs))
+        log.debug(pretty(target_attrs))
         for t in target_attrs:
             attr_name = t.get('name')
             targets = t.get('targets')
@@ -326,8 +698,8 @@ class IDN:
                 api='beta',
             )
             log.debug(ret)
-            log.debug(ret.text)
-            log.debug(ret.status_code)
+            # log.debug(ret.text)
+            # log.debug(ret.status_code)
             if ret.status_code == 200:
                 entitlements = ret.json()
 
@@ -362,7 +734,7 @@ class IDN:
         log.debug('Getting id by login')
         payload = {
             "query": {
-                "query": f"attributes.activeDirectoryUsername:\"{login}\""
+                "query": f"attributes.correlatedActiveDirectoryUsername:\"{login}\""
             },
             "indices": ["identities"],
             "includeNested": include_nested,
@@ -464,11 +836,11 @@ class IDN:
             },
         }
         log.debug('Creating Access Profile')
-        log.debug(pretty_repr(payload))
+        log.debug(pretty(payload))
         log.debug(json.dumps(payload))
         ret = self.api('access-profiles', method='POST', payload=payload)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -700,24 +1072,24 @@ class IDN:
 
         ret = self.api(f'entitlements/{entitlement_id}', api='beta')
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def list_apps(self):
         """List all apps from IDN for the org (aka. Tennant)"""
         log.debug('list_apps - start')
         ret = self.api('app/list?filter=org', api='cc')
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def get_ap(self, ap_id=None, ap_name=None):
         """Gets the Access Profile
@@ -777,7 +1149,7 @@ class IDN:
             ret = self.api(f'access-profiles/{ap_id}', api='v3')
 
             try:
-                log.debug(pretty_repr(ret.json()))
+                log.debug(pretty(ret.json()))
                 return ret.json()
             except:
                 log.error(ret.status_code)
@@ -832,7 +1204,7 @@ class IDN:
         )
 
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -897,7 +1269,7 @@ class IDN:
             ret = self.api(f'app/get/{app_id}', api='cc')
 
             try:
-                log.debug(pretty_repr(ret.json()))
+                log.debug(pretty(ret.json()))
                 return ret.json()
             except:
                 log.error(ret.status_code)
@@ -938,7 +1310,7 @@ class IDN:
         log.debug(payload)
         ret = self.api('app/create', method='POST', payload=payload, api='cc')
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -981,7 +1353,7 @@ class IDN:
 
         log.debug(ret)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -1045,12 +1417,12 @@ class IDN:
             ret = self.api(f'app/delete/{app_id}', method='POST', api='cc')
 
             try:
-                log.debug(pretty_repr(ret.json()))
+                log.debug(pretty(ret.json()))
                 return ret.json()
             except:
                 log.error(ret.status_code)
                 log.error(ret.text)
-                return none
+                return None
 
         msg = 'delete_app requires app_name or app_id'
         log.error(msg)
@@ -1088,12 +1460,12 @@ class IDN:
 
         # Using the ID there should only be one
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()[0]
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def get_app_access_profiles(self, app_id):
         """Gets the access profiles for an app.
@@ -1116,7 +1488,7 @@ class IDN:
         ret = self.api(f'app/getAccessProfiles/{app_id}', api='cc')
 
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()['items']
         except:
             log.error(ret.status_code)
@@ -1137,7 +1509,7 @@ class IDN:
 
         payload = {
             "query": {"query": "email:\"davep@fitchratings.com\""},
-            "indices": ["identities"],
+            "indices": ["identities"]
         }
 
         Parameters
@@ -1222,7 +1594,7 @@ class IDN:
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -1256,20 +1628,23 @@ class IDN:
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
             return None
 
-    def get_user_by_id(self, user_id):
+    def get_user_by_id(self, user_id, include_nested=False):
         """Gets the user by their ID
 
         Parameters
         --------------------
         user_id: string
             The users ID.
+
+        include_nested: boolean
+            Will include nested objects
 
         Results
         --------------------
@@ -1279,6 +1654,7 @@ class IDN:
         payload = {
             "query": {"query": f"id:\"{user_id}\""},
             "indices": ["identities"],
+            "includeNested": include_nested,
         }
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
@@ -1298,7 +1674,7 @@ class IDN:
         """List all sources"""
         ret = self.api('sources', method='GET', api='beta')
         sources = ret.json()
-        log.debug(str(sources))
+        log.debug(len(sources))
         return sources
 
     def run_acct_aggregation(self, source_name, optimized=True):
@@ -1336,7 +1712,7 @@ class IDN:
             api='cc',
         )
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -1372,7 +1748,7 @@ class IDN:
 
         for s in all_sources:
             if s.get('name') == name:
-                log.debug(pretty_repr(s))
+                log.debug(pretty(s))
                 if id_type == 'id':
                     return s.get('id')
                 else:
@@ -1429,7 +1805,7 @@ class IDN:
                 'newOwnerId': new_owner,
             }
 
-        ret = self.r(
+        ret = self.api(
             f'access-request-approvals/{approval_id}/{action}',
             method='POST',
             payload=payload,
@@ -1439,18 +1815,21 @@ class IDN:
         log.debug(ret)
         return ret
 
-    def main_search(self, thing):
+    def main_search(self, thing, query="*"):
         """Generic search for things
 
         Parameters
         --------------------
         things: string
 
+        query: string (default: *)
+            The query string you want to use
+
             Could be  accessprofiles, identities, entitlements etc.
         """
         out = {}
         payload = {
-            "query": {"query": "*"},
+            "query": {"query": query},
             "indices": [thing],
         }
         ret = self.search(payload)

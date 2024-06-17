@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>sailpoint package &#8212; sailpoint 1.5.post1.dev0+gf5bc280.d20231107 documentation</title>
+    <title>sailpoint package &#8212; sailpoint 1.6.post1.dev2+g9ffd463 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=233b9934" />
-    <script src="../_static/documentation_options.js?v=35d5e780"></script>
+    <script src="../_static/documentation_options.js?v=b7ed4fbc"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -76,6 +76,7 @@ string to overcome this</p></li>
 <dt class="sig sig-object py" id="sailpoint.report.IDNReport">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sailpoint.report.</span></span><span class="sig-name descname"><span class="pre">IDNReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/report.html#IDNReport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.report.IDNReport" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Standard reports from IDN</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sailpoint.report.IDNReport.get_ai_recommendations">
 <span class="sig-name descname"><span class="pre">get_ai_recommendations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/report.html#IDNReport.get_ai_recommendations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.report.IDNReport.get_ai_recommendations" title="Link to this definition">¶</a></dt>
@@ -106,6 +107,24 @@ string to overcome this</p></li>
 <dt class="sig sig-object py" id="sailpoint.util.IDN">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sailpoint.util.</span></span><span class="sig-name descname"><span class="pre">IDN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">secret</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tenant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.add_gg_members">
+<span class="sig-name descname"><span class="pre">add_gg_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ggid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">members</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.add_gg_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.add_gg_members" title="Link to this definition">¶</a></dt>
+<dd><p>Add Governance Group members</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ggid</strong> (<em>string</em>) – The ID of the governance group that you want to get the members
+of</p></li>
+<li><p><strong>members</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of members to add, list of guids</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>result json</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="sailpoint.util.IDN.create_ap">
 <span class="sig-name descname"><span class="pre">create_ap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owner_login</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owner_email</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entitlements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comments_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">denial_comments_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requestable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.create_ap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.create_ap" title="Link to this definition">¶</a></dt>
@@ -162,19 +181,51 @@ request. Default False</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sailpoint.util.IDN.create_gg">
-<span class="sig-name descname"><span class="pre">create_gg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owner_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.create_gg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.create_gg" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_gg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owner_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owner_login</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.create_gg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.create_gg" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a Governance Group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>string</em>) – The name of the Governance Group</p></li>
 <li><p><strong>description</strong> (<em>string</em>) – The description for the Governance Group</p></li>
-<li><p><strong>owner_id</strong> (<em>string</em>) – The Owner of the Access Profile specified by their loginID
+<li><p><strong>owner_id</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – The ID of the Owner of the Governance Group (guid)</p></li>
+<li><p><strong>owner_login</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – The Owner of the Governance Group specified by their loginID
 (sAMAccountName)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.del_gg">
+<span class="sig-name descname"><span class="pre">del_gg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ggid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.del_gg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.del_gg" title="Link to this definition">¶</a></dt>
+<dd><p>Delete Governance Group</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ggid</strong> (<em>string</em>) – The ID of the governance group that you want to delete</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>return status code</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.del_gg_members">
+<span class="sig-name descname"><span class="pre">del_gg_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ggid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">members</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.del_gg_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.del_gg_members" title="Link to this definition">¶</a></dt>
+<dd><p>Delete Governance Group members</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ggid</strong> (<em>string</em>) – The ID of the governance group</p></li>
+<li><p><strong>members</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of members to delete, list of guids</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>result json</p>
 </dd>
 </dl>
 </dd></dl>
@@ -205,6 +256,20 @@ the app and then get the appId parameter from the app.</p></li>
 </dd>
 </dl>
 </section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.delete_gg">
+<span class="sig-name descname"><span class="pre">delete_gg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ggid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.delete_gg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.delete_gg" title="Link to this definition">¶</a></dt>
+<dd><p>Delete a Governance Group</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ggid</strong> (<em>string</em><em> (</em><em>required</em><em>)</em>) – The ID of the governance group to delete</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if Deleted</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -246,6 +311,39 @@ sensitive.</p></li>
 <li><p><strong>--------------------</strong> – </p></li>
 <li><p><strong>ap</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – The access profile and its attributes</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.get_api_obj">
+<span class="sig-name descname"><span class="pre">get_api_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.get_api_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.get_api_obj" title="Link to this definition">¶</a></dt>
+<dd><dl>
+<dt>Get something from the API</dt><dd><p>Basically any API object that supports both getting by ID or by
+list with a filter.</p>
+<dl class="simple">
+<dt>For example:</dt><dd><ul class="simple">
+<li><p>access-profiles</p></li>
+<li><p>workgroups (governance groups)</p></li>
+<li><p>sod-policies</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api_obj</strong> (<em>string</em>) – The API object type you are getting</p></li>
+<li><p><strong>idn_id</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – The ID of the thing you are wanting to get</p></li>
+<li><p><strong>idn_name</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – The exact name of the thing you want to get</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>results</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list - a list of matching things</p>
 </dd>
 </dl>
 </dd></dl>
@@ -405,6 +503,46 @@ Entitlement ID as defined in the source schema.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.get_gg">
+<span class="sig-name descname"><span class="pre">get_gg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ggid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">members</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.get_gg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.get_gg" title="Link to this definition">¶</a></dt>
+<dd><p>Get Governance Groups - Generator</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ggid</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – The ID of the governance group that you want to get</p></li>
+<li><p><strong>search_name</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – The exact name of the governance group that you want to get</p></li>
+<li><p><strong>members</strong> (<em>boolean</em><em> (</em><em>default: False</em><em>)</em>) – If you want to include the members of the governance group</p></li>
+<li><p><strong>connections</strong> (<em>boolean</em><em> (</em><em>default: False</em><em>)</em>) – If you want to include the connections of the governance group</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>governance_groups</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list - a list of matching governance groups</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.get_gg_connections">
+<span class="sig-name descname"><span class="pre">get_gg_connections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ggid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.get_gg_connections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.get_gg_connections" title="Link to this definition">¶</a></dt>
+<dd><p>Get Governance Group connections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ggid</strong> (<em>string</em>) – The ID of the governance group that you want to get the
+connections for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>connections - NOTE</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>only returns first 50 offset not used</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="sailpoint.util.IDN.get_gg_members">
 <span class="sig-name descname"><span class="pre">get_gg_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ggid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.get_gg_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.get_gg_members" title="Link to this definition">¶</a></dt>
 <dd><p>Get Governance Group members</p>
@@ -491,12 +629,13 @@ could be “id” or “cloudExternalId”</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sailpoint.util.IDN.get_user_by_id">
-<span class="sig-name descname"><span class="pre">get_user_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.get_user_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.get_user_by_id" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_user_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_nested</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.get_user_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.get_user_by_id" title="Link to this definition">¶</a></dt>
 <dd><p>Gets the user by their ID</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>user_id</strong> (<em>string</em>) – The users ID.</p></li>
+<li><p><strong>include_nested</strong> (<em>boolean</em>) – Will include nested objects</p></li>
 <li><p><strong>Results</strong> – </p></li>
 <li><p><strong>--------------------</strong> – </p></li>
 <li><p><strong>identity</strong> (<em>The Identity that matched</em>) – </p></li>
@@ -598,11 +737,16 @@ Search is case insensitive</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sailpoint.util.IDN.main_search">
-<span class="sig-name descname"><span class="pre">main_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.main_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.main_search" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">main_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'*'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.main_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.main_search" title="Link to this definition">¶</a></dt>
 <dd><p>Generic search for things</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>things</strong> (<em>string</em>) – Could be  accessprofiles, identities, entitlements etc.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>things</strong> (<em>string</em>) – </p></li>
+<li><p><strong>query</strong> (string (default: <a href="#id3"><span class="problematic" id="id4">*</span></a>)) – <p>The query string you want to use</p>
+<p>Could be  accessprofiles, identities, entitlements etc.</p>
+</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -656,7 +800,7 @@ figure out the payload.</p>
 <p>For example:</p>
 <dl class="simple">
 <dt>payload = {</dt><dd><p>“query”: {“query”: “email:”<a class="reference external" href="mailto:davep&#37;&#52;&#48;fitchratings&#46;com">davep<span>&#64;</span>fitchratings<span>&#46;</span>com</a>””},
-“indices”: [“identities”],</p>
+“indices”: [“identities”]</p>
 </dd>
 </dl>
 <p>}</p>
@@ -745,8 +889,8 @@ users are allowed to perform this action.</p>
 used if action is “forward”.</p>
 </dd>
 </dl>
-<section id="id3">
-<h3>Results<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<section id="id5">
+<h3>Results<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
 <p>ret: 202 is success anything else you better check</p>
 </section>
 </dd></dl>
@@ -773,6 +917,52 @@ description at the time the next entitlement aggregation is run</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sailpoint.util.IDN.update_idn_obj">
+<span class="sig-name descname"><span class="pre">update_idn_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sailpoint/util.html#IDN.update_idn_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sailpoint.util.IDN.update_idn_obj" title="Link to this definition">¶</a></dt>
+<dd><dl>
+<dt>Update an IDN Object</dt><dd><p>Basically any API object that supports patching an update with a
+path.</p>
+<dl class="simple">
+<dt>For example:</dt><dd><ul class="simple">
+<li><p>access-profiles</p></li>
+<li><p>workgroups (governance groups)</p></li>
+<li><p>entitlements</p></li>
+<li><p>roles</p></li>
+<li><p>sources</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idn_type</strong> (<em>string</em>) – <dl class="simple">
+<dt>The API object type you are setting:</dt><dd><ul>
+<li><p>access-profiles</p></li>
+<li><p>workgroups (governance groups)</p></li>
+<li><p>entitlements</p></li>
+<li><p>roles</p></li>
+<li><p>sources</p></li>
+</ul>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>idn_id</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – The ID of the thing you are wanting to update</p></li>
+<li><p><strong>op</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – replace - as per API docs</p></li>
+<li><p><strong>path</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – example: /owner - must include preceding forward slash</p></li>
+<li><p><strong>value</strong> (<em>string</em><em>, </em><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>, </em><em>dict - as per API docs</em>) – <p>example:</p>
+<p>owner = {‘type’: ‘IDENTITY’, ‘id’: transfer_user}</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>json results</p>
 </dd>
 </dl>
 </dd></dl>

@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>sailpoint.api &#8212; sailpoint 1.5.post1.dev0+gbfea59d.d20231107 documentation</title>
+    <title>sailpoint.api &#8212; sailpoint 1.5.post1.dev22+g639b4f6 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=233b9934" />
-    <script src="../../_static/documentation_options.js?v=de7c67dd"></script>
+    <script src="../../_static/documentation_options.js?v=57dfdc22"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -72,10 +72,11 @@
 
         <span class="c1"># log.debug(f&#39;curl --request POST --url {url}&#39;)</span>
         <span class="k">if</span> <span class="n">zscaler_cert_file</span><span class="p">:</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
                 <span class="n">url</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span>
                 <span class="c1">#            proxies=dict(</span>
                 <span class="c1">#                http=&#39;socks5://localhost:8888&#39;,</span>
                 <span class="c1">#                https=&#39;socks5://localhost:8888&#39;</span>
@@ -121,6 +122,8 @@
 <span class="sd">            - You can pass offset and limit manually as part of the endpoint</span>
 <span class="sd">              string to overcome this</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">api</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">]:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using deprecated API: </span><span class="si">{</span><span class="n">api</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">endpoint</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">api</span> <span class="o">==</span> <span class="s1">&#39;cc&#39;</span><span class="p">:</span>
             <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
@@ -135,7 +138,7 @@
             <span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="n">default_headers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">default_headers</span><span class="p">)</span>
+        <span class="c1"># log.debug(default_headers)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;URL: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1"># quit()</span>
 
@@ -149,6 +152,7 @@
                         <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
                         <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">,</span>
                         <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+                        <span class="n">timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="k">break</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -165,6 +169,7 @@
                         <span class="n">headers</span><span class="o">=</span><span class="n">default_headers</span><span class="p">,</span>
                         <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
                         <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+                        <span class="n">timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="k">break</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -172,8 +177,8 @@
                     <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Sleeping 300ms and trying again up to 5 times&#39;</span><span class="p">)</span>
                     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">300</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
                     <span class="k">pass</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="c1"># log.debug(response)</span>
+        <span class="c1"># log.debug(response.text)</span>
         <span class="k">return</span> <span class="n">response</span></div>
 </div>
 

@@ -2,6 +2,24 @@
 Changelog
 =========
 
+Version 1.6
+===========
+- Fixing reference to API
+- Report was including users with the wrong lifeCycle state
+- Adding warning message for deprecated API use
+- Adding docstrings
+- Fixing return
+- adding update idn obj function and cleaning up pretty logging
+- get_api_obj function added
+- Fixing typos
+- Fixing typo
+- Adding governance group functions now v3/beta compliant
+- Adding timeout to API calls
+- Removing unnecessarily verbose logging
+- Removing unnecessarily verbose logging
+- Adding query parameter to main_search
+- Adjusting logging levels
+
 Version 1.5
 ===========
 - Include nested objects when getting IDs

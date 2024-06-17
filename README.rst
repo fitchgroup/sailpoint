@@ -36,7 +36,7 @@ Getting Started
 
 Install the python module using pip:
 
-``pip install sailpoint-1.5-py3-none-any.whl``
+``pip install sailpoint-1.6-py3-none-any.whl``
 
 The wheel file can be found in the `dist` directory.
 
