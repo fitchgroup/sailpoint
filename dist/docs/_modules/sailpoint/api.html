@@ -4,10 +4,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<<<<<<< HEAD
     <title>sailpoint.api &#8212; sailpoint 1.5.post1.dev22+g639b4f6 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=233b9934" />
     <script src="../../_static/documentation_options.js?v=57dfdc22"></script>
+=======
+    <title>sailpoint.api &#8212; sailpoint 1.5.post1.dev0+gbfea59d.d20231107 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=233b9934" />
+    <script src="../../_static/documentation_options.js?v=de7c67dd"></script>
+>>>>>>> main
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -152,7 +159,10 @@
                         <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
                         <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">,</span>
                         <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+<<<<<<< HEAD
                         <span class="n">timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+=======
+>>>>>>> main
                     <span class="p">)</span>
                     <span class="k">break</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -169,7 +179,10 @@
                         <span class="n">headers</span><span class="o">=</span><span class="n">default_headers</span><span class="p">,</span>
                         <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
                         <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+<<<<<<< HEAD
                         <span class="n">timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+=======
+>>>>>>> main
                     <span class="p">)</span>
                     <span class="k">break</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -177,8 +190,13 @@
                     <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Sleeping 300ms and trying again up to 5 times&#39;</span><span class="p">)</span>
                     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">300</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
                     <span class="k">pass</span>
+<<<<<<< HEAD
         <span class="c1"># log.debug(response)</span>
         <span class="c1"># log.debug(response.text)</span>
+=======
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+>>>>>>> main
         <span class="k">return</span> <span class="n">response</span></div>
 </div>
 
