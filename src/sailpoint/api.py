@@ -114,10 +114,7 @@ class IDNApi:
                         files=files,
                         verify=zscaler_cert_file,
                         json=payload,
-<<<<<<< HEAD
                         timeout=20,
-=======
->>>>>>> main
                     )
                     break
                 except Exception as e:
@@ -134,10 +131,7 @@ class IDNApi:
                         headers=default_headers,
                         files=files,
                         json=payload,
-<<<<<<< HEAD
                         timeout=20,
-=======
->>>>>>> main
                     )
                     break
                 except Exception as e:
@@ -145,13 +139,8 @@ class IDNApi:
                     log.error('Sleeping 300ms and trying again up to 5 times')
                     time.sleep(300 / 1000)  # sleep for 300ms
                     pass
-<<<<<<< HEAD
         # log.debug(response)
         # log.debug(response.text)
-=======
-        log.debug(response)
-        log.debug(response.text)
->>>>>>> main
         return response
 
 
