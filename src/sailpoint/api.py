@@ -39,10 +39,11 @@ class IDNApi:
 
         # log.debug(f'curl --request POST --url {url}')
         if zscaler_cert_file:
-            x = requests.post(url, verify=zscaler_cert_file)
+            x = requests.post(url, verify=zscaler_cert_file, timeout=10)
         else:
             x = requests.post(
                 url,
+                timeout=10
                 #            proxies=dict(
                 #                http='socks5://localhost:8888',
                 #                https='socks5://localhost:8888'
@@ -83,6 +84,8 @@ class IDNApi:
             - You can pass offset and limit manually as part of the endpoint
               string to overcome this
         """
+        if api not in ['beta', 'v3']:
+            log.warning(f'Using deprecated API: {api} - {endpoint}')
 
         if api == 'cc':
             url = (
@@ -97,7 +100,7 @@ class IDNApi:
             'Authorization': f'Bearer {self.token}',
         }
         default_headers.update(headers)
-        log.debug(default_headers)
+        # log.debug(default_headers)
         log.debug(f'URL: {url}')
         # quit()
 
@@ -111,6 +114,10 @@ class IDNApi:
                         files=files,
                         verify=zscaler_cert_file,
                         json=payload,
+<<<<<<< HEAD
+                        timeout=20,
+=======
+>>>>>>> main
                     )
                     break
                 except Exception as e:
@@ -127,6 +134,10 @@ class IDNApi:
                         headers=default_headers,
                         files=files,
                         json=payload,
+<<<<<<< HEAD
+                        timeout=20,
+=======
+>>>>>>> main
                     )
                     break
                 except Exception as e:
@@ -134,8 +145,13 @@ class IDNApi:
                     log.error('Sleeping 300ms and trying again up to 5 times')
                     time.sleep(300 / 1000)  # sleep for 300ms
                     pass
+<<<<<<< HEAD
+        # log.debug(response)
+        # log.debug(response.text)
+=======
         log.debug(response)
         log.debug(response.text)
+>>>>>>> main
         return response
 
 

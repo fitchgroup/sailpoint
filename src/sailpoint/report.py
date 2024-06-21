@@ -5,6 +5,10 @@ log = logging.getLogger(__name__)
 
 
 class IDNReport:
+    """
+    Standard reports from IDN
+    """
+
     def __init__(self, api, idn):
         self.api = api
         self.idn = idn  # the idn util object
@@ -21,11 +25,11 @@ class IDNReport:
                 for m in gg_mbrs:
                     # Get the identity for each member
                     log.debug(m)
-                    user = self.idn.get_user_by_id(m.get('externalId', None))
+                    user = self.idn.get_user_by_id(m.get('id', None))
                     # log.debug(user)
-                    status = user.get('status', None)
-                    if status != 'ACTIVE':
-                        attrs = user.get('attributes', {})
+                    attrs = user.get('attributes', {})
+                    status = attrs.get('cloudLifecycleState', None)
+                    if status != 'active':
                         record = {
                             'Governance Group': gg.get('name', None),
                             'Member Name': user.get('name', None),
@@ -63,9 +67,9 @@ class IDNReport:
             ret = self.api(
                 f'access-profiles?filters=owner.id eq "{owner_id}"', api='beta'
             )
-            log.info(ret)
-            log.info(ret.text)
-            log.info(ret.json())
+            log.debug(ret)
+            log.debug(ret.text)
+            log.debug(ret.json())
             for ap in ret.json():
                 apid = ap.get('id', None)
                 if apid:
@@ -100,9 +104,9 @@ class IDNReport:
         ret = self.api(
             f'access-request-recommendations/?identity-id={id}', api='beta'
         )
-        log.info(ret)
-        log.info(ret.text)
-        log.info(ret.json())
+        log.debug(ret)
+        log.debug(ret.text)
+        log.debug(ret.json())
 
 
 if __name__ == '__main__':
