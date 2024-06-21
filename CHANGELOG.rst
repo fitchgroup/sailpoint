@@ -2,7 +2,6 @@
 Changelog
 =========
 
-<<<<<<< HEAD
 Version 1.6
 ===========
 - Fixing reference to API
@@ -21,8 +20,6 @@ Version 1.6
 - Adding query parameter to main_search
 - Adjusting logging levels
 
-=======
->>>>>>> main
 Version 1.5
 ===========
 - Include nested objects when getting IDs
