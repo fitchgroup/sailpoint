@@ -3,9 +3,10 @@ import io
 import logging
 import csv
 import json
+import time
 
 # from rich.str import str_repr as str
-from rich.pretty import pretty_repr
+from rich.pretty import pretty_repr as pretty
 
 log = logging.getLogger(__name__)
 
@@ -14,9 +15,9 @@ class IDN:
     def __init__(self, secret=None, client_id=None, tenant=None):
         idn_api = IDNApi(secret, client_id, tenant)
         self.api = idn_api.r
-        pass
+        self.item_descriptions = {}  # Item description index
 
-    def create_gg(self, name, description, owner_id):
+    def create_gg(self, name, description, owner_id=None, owner_login=None):
         """Creates a Governance Group
 
         Parameters
@@ -27,8 +28,11 @@ class IDN:
         description: string
             The description for the Governance Group
 
-        owner_id: string
-            The Owner of the Access Profile specified by their loginID
+        owner_id: string (optional)
+            The ID of the Owner of the Governance Group (guid)
+
+        owner_login: string (optional)
+            The Owner of the Governance Group specified by their loginID
             (sAMAccountName)
 
 
@@ -38,7 +42,14 @@ class IDN:
 
         """
 
-        owner_idn = self.get_id_by_login(owner_id)[0]
+        if owner_id:
+            pass
+            owner_idn = self.get_user_by_id(owner_id)
+        elif owner_login:
+            owner_idn = self.get_id_by_login(owner_login)[0]
+        else:
+            log.error('Either owner_id or owner_login must be specified')
+            return False
 
         payload = {
             "name": name,
@@ -47,11 +58,24 @@ class IDN:
         }
         log.debug('Creating Governance Group')
         log.debug(payload)
-        ret = self.api('workgroups', api='v2', method='POST', payload=payload)
-        log.debug(ret)
-        log.debug(ret.text)
-        log.debug(ret.json())
-        return True
+        ret = self.api(
+            'workgroups', api='beta', method='POST', payload=payload
+        )
+        log.error(ret)
+        log.error(ret.text)
+        log.error(ret.json())
+
+        ret = self.get_gg(search_name=name, members=True)
+        out_g = []
+        for r in ret:
+            out_g.append(r)
+        if len(out_g) == 1:
+            return out_g[0]
+        else:
+            log.error(
+                f'Error creating groups. {len(out_g)} Groups with name: {name}'
+            )
+            return False
 
     def get_cc_id_for_id(self, idn_id):
         """
@@ -99,6 +123,172 @@ class IDN:
                 log.debug(i)
                 return i.get('id')
 
+    def delete_gg(self, ggid):
+        """Delete a Governance Group
+
+        Parameters
+        --------------------
+        ggid: string (required)
+            The ID of the governance group to delete
+
+        Returns
+        --------------------
+        True if Deleted
+
+        """
+
+        return False
+
+    def get_gg(
+        self, ggid=None, search_name=None, members=False, connections=False
+    ):
+        """Get Governance Groups - Generator
+
+        Parameters
+        --------------------
+        ggid: string (optional)
+            The ID of the governance group that you want to get
+
+        search_name: string (optional)
+            The exact name of the governance group that you want to get
+
+        members: boolean (default: False)
+            If you want to include the members of the governance group
+
+        connections: boolean (default: False)
+            If you want to include the connections of the governance group
+
+
+
+        Returns
+        --------------------
+        governance_groups: list - a list of matching governance groups
+
+        """
+        # get governance group
+        if ggid:
+            endpoint = f'workgroups/{ggid}'
+            ret = self.api(endpoint, api='beta')
+            try:
+                out = ret.json()
+                if members is True:
+                    members = self.get_gg_members(out.get('id'))
+                    out['members'] = members
+                if connections is True:
+                    connections = self.get_gg_connections(out.get('id'))
+                    out['connections'] = connections
+                yield out
+            except:
+                log.error(ret.status_code)
+                log.error(ret.text)
+                return None
+
+        else:
+            offset = 0
+            if search_name:
+                parameters = f'filters=name eq "{search_name}"'
+            else:
+                parameters = ''
+            log.debug(parameters)
+
+            while True:
+                endpoint = f'workgroups?offset={offset}&limit=250&sorters=id&{parameters}'
+                ret = self.api(endpoint, api='beta')
+                log.debug(ret)
+                if ret.status_code == 200:
+                    ggroups = ret.json()
+
+                    if len(ggroups) == 0:
+                        break
+
+                    for g in ggroups:
+                        offset += 1
+                        if members is True:
+                            g['members'] = self.get_gg_members(g.get('id'))
+                        if connections is True:
+                            g['connections'] = self.get_gg_connections(
+                                g.get('id')
+                            )
+                        yield (g)
+                else:
+                    log.warning(ret.text)
+                    log.warning(ret.status_code)
+                    log.warning('Did not get 200 status_code - retrying')
+
+    def del_gg_members(self, ggid, members):
+        """Delete Governance Group members
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group
+
+        members: list
+            List of members to delete, list of guids
+
+        Returns
+        --------------------
+        result json
+
+        """
+        # get governance group members
+        del_members = []
+        for m in members:
+            del_members.append({'id': m, 'type': 'IDENTITY'})
+
+            pass
+        ret = self.api(
+            f'workgroups/{ggid}/members/bulk-delete',
+            api='beta',
+            payload=del_members,
+            method='post',
+        )
+
+        try:
+            log.debug(pretty(ret.json()))
+            return ret.json()
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return None
+
+    def add_gg_members(self, ggid, members):
+        """Add Governance Group members
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group that you want to get the members
+            of
+        members: list
+            List of members to add, list of guids
+
+        Returns
+        --------------------
+        result json
+
+        """
+        # get governance group members
+        add_members = []
+        for m in members:
+            add_members.append({'id': m, 'type': 'IDENTITY'})
+
+            pass
+        ret = self.api(
+            f'workgroups/{ggid}/members/bulk-add',
+            api='beta',
+            payload=add_members,
+            method='post',
+        )
+
+        try:
+            log.debug(pretty(ret.json()))
+            return ret.json()
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return None
+
     def get_gg_members(self, ggid):
         """Get Governance Group members
 
@@ -114,15 +304,261 @@ class IDN:
 
         """
         # get governance group members
-        ret = self.api(f'workgroups/{ggid}/members', api='v2')
+        c = 0
+        for _ in range(20):
+            ret = self.api(f'workgroups/{ggid}/members', api='beta')
+            c = c + 1
+            try:
+                ret_json = ret.json()
+                log.debug(ret_json)
+                if isinstance(ret_json, list):
+                    return ret_json
+                elif ret_json.get('message', None) == ' Rate Limit Exceeded ':
+                    log.warning(f'Rate Limit Exceeded - Attempt {c} of 20')
+                    time.sleep(500 / 1000)  # sleep for 300ms
+                    pass
+                else:
+                    raise Exception('Failed to get gg members')
+            except:
+                log.error(ret.text)
+                log.error(ret.status_code)
+                log.error(ret.text)
+                raise Exception('Failed to get gg members')
+        raise Exception('Failed to get gg members')
+
+    def get_gg_connections(self, ggid):
+        """Get Governance Group connections
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group that you want to get the
+            connections for
+
+        Returns
+        --------------------
+        connections - NOTE: only returns first 50 offset not used
+
+        """
+        # get governance group members
+        ret = self.api(f'workgroups/{ggid}/connections', api='beta')
         # print(ret)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
             return None
+
+    def del_gg(self, ggid):
+        """Delete Governance Group
+
+        Parameters
+        --------------------
+        ggid: string
+            The ID of the governance group that you want to delete
+
+        Returns
+        --------------------
+        return status code
+
+        """
+        # get governance group members
+        ret = self.api(f'workgroups/{ggid}', method='delete', api='beta')
+        # print(ret)
+        try:
+            log.debug(ret.status_code)
+            log.error(ret.text)
+            return ret.status_code
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return ret.status_code
+
+    def update_gg(self, gg_id, parameter, value):
+        """Updates an governance group
+
+        This updates a governance group.
+
+        Parameters
+        --------------------
+        gg_id: string
+            The governance group ID that you want to update.
+
+        parameter: string
+            The parameter that you want to update.
+
+        value: string
+            The value you want to set.
+
+        Results
+        --------------------
+        gg: dict
+            The governance group and its attributes
+
+        """
+        log.debug('update_gg - start')
+
+        payload = [
+            {
+                "op": "replace",
+                "path": f"/{parameter}",
+                "value": value,
+            }
+        ]
+        log.debug(gg_id)
+        log.debug(payload)
+
+        patch_header = {'Content-Type': 'application/json-patch+json'}
+        ret = self.api(
+            f'workgroups/{gg_id}',
+            method='PATCH',
+            payload=payload,
+            headers=patch_header,
+            api='beta',
+        )
+
+        try:
+            log.debug(pretty(ret.json()))
+            return ret.json()
+        except:
+            log.error(ret.status_code)
+            log.error(ret.text)
+            return None
+
+    def update_idn_obj(self, idn_type, idn_id, op, path, value):
+        """Update an IDN Object
+            Basically any API object that supports patching an update with a
+            path.
+
+            For example:
+                - access-profiles
+                - workgroups (governance groups)
+                - entitlements
+                - roles
+                - sources
+
+
+
+        Parameters
+        --------------------
+        idn_type: string
+            The API object type you are setting:
+                - access-profiles
+                - workgroups (governance groups)
+                - entitlements
+                - roles
+                - sources
+
+        idn_id: string (optional)
+            The ID of the thing you are wanting to update
+
+        op: string (optional)
+            replace - as per API docs
+
+        path: string (optional)
+            example: /owner - must include preceding forward slash
+
+        value: string, list, dict - as per API docs
+            example:
+
+            owner = {'type': 'IDENTITY', 'id': transfer_user}
+
+
+        Returns
+        --------------------
+        json results
+
+        """
+        payload = [
+            {
+                'op': op,
+                'path': path,
+                'value': value,
+            }
+        ]
+        log.debug(pretty(op))
+        log.debug(pretty(idn_id))
+        log.debug(pretty(payload))
+        ret = self.api(
+            f'{idn_type}/{idn_id}',
+            method='PATCH',
+            api='beta',
+            payload=payload,
+            headers={'Content-Type': 'application/json-patch+json'},
+        )
+        log.debug(pretty(ret))
+        log.debug(pretty(ret.text))
+        log.debug(pretty(ret.json()))
+        return ret.json()
+
+    def get_api_obj(self, api_obj=None, idn_id=None, idn_name=None):
+        """Get something from the API
+            Basically any API object that supports both getting by ID or by
+            list with a filter.
+
+            For example:
+                - access-profiles
+                - workgroups (governance groups)
+                - sod-policies
+
+
+
+        Parameters
+        --------------------
+        api_obj : string
+            The API object type you are getting
+
+        idn_id: string (optional)
+            The ID of the thing you are wanting to get
+
+        idn_name: string (optional)
+            The exact name of the thing you want to get
+
+        Returns
+        --------------------
+        results: list - a list of matching things
+
+        """
+        # get api object
+        log.debug(f'Getting {api_obj}')
+        if idn_id:
+            endpoint = f'{api_obj}/{idn_id}'
+            ret = self.api(endpoint, api='beta')
+            try:
+                out = ret.json()
+                yield out
+            except:
+                log.error(ret.status_code)
+                log.error(ret.text)
+                return None
+
+        else:
+            offset = 0
+            if idn_name:
+                parameters = f'filters=name eq "{idn_name}"'
+            else:
+                parameters = ''
+            log.debug(parameters)
+
+            while True:
+                endpoint = f'{api_obj}?offset={offset}&limit=250&sorters=id&{parameters}'
+                ret = self.api(endpoint, api='beta')
+                log.debug(ret)
+                if ret.status_code == 200:
+                    ggroups = ret.json()
+
+                    if len(ggroups) == 0:
+                        break
+
+                    for g in ggroups:
+                        offset += 1
+                        yield (g)
+                else:
+                    log.warning(ret.text)
+                    log.warning(ret.status_code)
+                    log.warning('Did not get 200 status_code - retrying')
 
     def get_org(self):
         """Gets the org information
@@ -135,7 +571,7 @@ class IDN:
 
         log.debug('Getting tenant info')
 
-        ret = self.api('org', api='v2')
+        ret = self.api('tenant', api='beta')
         org = ret.json()
 
         #    for e in orgs:
@@ -143,7 +579,83 @@ class IDN:
         log.debug(str(org))
         return org
 
-    def list_source_attributes(self, source_id=None, source_name=None):
+    def get_provisioning_policies(self, source_id=None, source_name=None):
+        """List source provisioning policies
+
+        Parameters
+        --------------------
+        source_id: string
+            The ID of the source
+
+        source_name: string
+            The Name of the source
+
+        Either the name or the ID must be specified
+
+
+        Returns
+        --------------------
+        policies: dict
+            The policies
+
+        """
+        if not source_id:
+            source_id = self.get_sourceid_for_name(source_name)
+
+        log.debug(f'Getting provisioning policies for source: {source_id}')
+
+        ret = self.api(
+            f'sources/{source_id}/provisioning-policies',
+            method='GET',
+            api='v2024',
+        )
+
+        log.debug(ret)
+        log.debug(ret.text)
+        policies = ret.json()
+        log.debug(str(policies))
+        return policies
+
+    def list_source_sync_config(
+        self, source_id=None, source_name=None, usage_type='CREATE'
+    ):
+        """List source sync config
+
+        Parameters
+        --------------------
+        source_id: string
+            The ID of the source
+
+        source_name: string
+            The Name of the source
+
+        Returns
+        --------------------
+        sync_config: dict
+            The sync_config
+
+        """
+        if not source_id:
+            source_id = self.get_sourceid_for_name(source_name)
+
+        headers = {'X-SailPoint-Experimental': 'true'}
+        response = self.api(
+            endpoint=f'sources/{source_id}/attribute-sync-config',
+            api='v2024',
+            headers=headers,
+        )
+        if response.status_code != 200:
+            raise Exception(
+                f"API request failed with status {response.status_code}"
+            )
+        ret = response.json()
+
+        log.debug(pretty(ret))
+        return ret
+
+    def list_source_attributes(
+        self, source_id=None, source_name=None, usage_type='CREATE'
+    ):
         """List source attributes from source sync config
 
         Parameters
@@ -153,6 +665,15 @@ class IDN:
 
         source_name: string
             The Name of the source
+
+        usage_type: string
+            Possible values: [CREATE, UPDATE, ENABLE, DISABLE, DELETE,
+            ASSIGN, UNASSIGN, CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP,
+            REGISTER, CREATE_IDENTITY, UPDATE_IDENTITY, EDIT_GROUP, UNLOCK,
+            CHANGE_PASSWORD]
+
+            The type of provisioning policy usage. In IdentityNow, a source
+            can support various provisioning operations.
 
         Either the name or the ID must be specified
 
@@ -169,39 +690,26 @@ class IDN:
 
         log.debug(f'Getting attributes for source: {source_id}')
 
-        # These are internal APIs they are not exposing:
-        # https://developer.sailpoint.com/discuss/t/get-campaign-reports-id-through-api/1017/8
+        pps = self.get_provisioning_policies(source_id=source_id)
 
-        ret = 'Not exposed by SailPoint'
-        #        ret = self.api(
-        #            f'sources/{source_id}/attribute-sync-config',
-        #            method='GET',
-        #            api='attr-sync',
-        #        )
-        #        ret = self.api(
-        #            f'provisioning/provisioningPolicies/{source_id}/Create',
-        #            method='GET',
-        #            api='mantis',
-        #        )
-
-        log.debug(ret)
-        log.debug(ret.text)
-        attributes = ret.json()
-        log.debug(str(attributes))
-        return attributes
+        for pp in pps:
+            if pp.get('usageType') == usage_type:
+                return pp.get('fields', [])
 
     def list_identity_attributes_source(self):
         """List all identity attributes from profile source"""
         ret = self.api('identity-profiles', method='GET', api='beta')
         attributes = ret.json()
-        log.debug(str(attributes))
+        log.debug(pretty(attributes))
         return attributes
 
     def list_identity_attributes(self):
         """List all identity attributes"""
-        ret = self.api('identityAttribute/list', method='GET', api='cc')
+        ret = self.api('identity-attributes', method='GET', api='beta')
+        log.info(pretty(ret))
+        # log.info(pretty(ret.text))
         attributes = ret.json()
-        log.debug(str(attributes))
+        log.debug(pretty(attributes))
         return attributes
 
     def remove_account_from_id(self, account_id):
@@ -235,30 +743,72 @@ class IDN:
             log.error(e)
             return False
 
-    def get_attribute_map(self, map_source):
+    def reidx(self, data, idx_key='name'):
+        outdata = {}
+        for r in data:
+            outdata[r.get(idx_key)] = r
+        return outdata
+
+    def get_attribute_map(self, identity_profile_name=None):
         """Gets the attribute map"""
-        target_attrs = self.list_identity_attributes()
-        source_systems = self.list_identity_attributes_source()
 
-        # reindex to attribute name
-        attr_map = {}
-        for s in source_systems:
-            if s.get('name') == map_source:
-                source_config = s.get('identityAttributeConfig')
-                source_attrs = source_config.get('attributeTransforms')
-        if source_attrs:
-            log.debug('Got Source attributes')
-            for a in source_attrs:
-                attr_name = a.get('identityAttributeName')
-                attr_map[attr_name] = {'source': a, 'dest': []}
-        log.debug(pretty_repr(target_attrs))
-        for t in target_attrs:
-            attr_name = t.get('name')
-            targets = t.get('targets')
-            if len(targets) > 0:
-                attr_map[attr_name]['dest'] = targets
+        profiles = self.list_identity_profiles()
 
-        return attr_map
+        # Get the identity profile we are looking for
+        for p in profiles:
+            if p.get('name', '') == identity_profile_name:
+                profile = p
+                continue
+
+        # The source of the attribute values by idn attribute name
+        source_info = self.reidx(
+            profile.get('identityAttributeConfig', {}).get(
+                'attributeTransforms', []
+            ),
+            idx_key='identityAttributeName',
+        )
+
+        # Get identity attributes - gives us displayName
+        idn_attrs = self.reidx(self.list_identity_attributes(), idx_key='name')
+
+        # Add source data
+        for a in idn_attrs:
+            # log.info(a)
+            if 'source_data' not in idn_attrs[a]:
+                idn_attrs[a]['source_data'] = source_info.get(a, {})
+
+        sources = [s.get('name') for s in self.list_sources()]
+
+        # Get all source attributes - target attributes
+        for s in sources:
+            attrs = self.list_source_attributes(source_name=s)
+            log.info(f'Attributes for {s}')
+            # log.info(pretty(attrs))
+            for a in attrs:
+                transform = a.get('transform', {})
+                if transform:
+                    attr_type = a.get('transform', {}).get('type')
+
+                    log.info(f'{a}')
+                    log.info(f'{attr_type}: {pretty(transform)}')
+                    log.info(s)
+                    log.info(pretty(transform))
+                    if attr_type == 'rule':
+                        log.warning('Rule Found')
+                        idn_a = 'Rule'
+                    elif attr_type == 'static':
+                        idn_a = 'Static Values'
+                    elif attr_type == 'identityAttribute':
+                        idn_a = transform.get('attributes', {}).get('name')
+                    log.info(f'idn_a: {idn_a}')
+                    if idn_a not in idn_attrs:
+                        idn_attrs[idn_a] = {}
+                    if 'target_data' not in idn_attrs[idn_a]:
+                        idn_attrs[idn_a]['target_data'] = []
+                    idn_attrs[idn_a]['target_data'].append(
+                        {'target_source': s, 'target_attr': a}
+                    )
+        return idn_attrs
 
     def get_entitlement_by_id(self, entitlement_id):
         """Gets an entitlement by its ID
@@ -326,8 +876,8 @@ class IDN:
                 api='beta',
             )
             log.debug(ret)
-            log.debug(ret.text)
-            log.debug(ret.status_code)
+            # log.debug(ret.text)
+            # log.debug(ret.status_code)
             if ret.status_code == 200:
                 entitlements = ret.json()
 
@@ -341,6 +891,92 @@ class IDN:
                 log.warning(ret.text)
                 log.warning(ret.status_code)
                 log.warning('Did not get 200 status_code - retrying')
+
+    def get_entitlement(self, attr_name, attr_value, source_name):
+        """Gets a single entitlement from a source
+
+        Returns 1 record if found
+
+        Parameters
+        --------------------
+        attr_name: string
+            The entitlement ATTRIBUTE name i.e "memberOf" in the case of Active Directory
+
+        attr_value: string
+            The entitlement NAME  as defined in the entitlement schema. ie  "Domain Users"
+
+        source_name: string
+            The entitlement SOURCE as defined in the entitlement schema.
+
+        Returns
+        --------------------
+        entitlement_info:
+                List of dict with the entitlement information
+
+        """
+
+        log.debug(
+            f'Getting Entitlement {attr_name}:{attr_value} on source: {source_name}'
+        )
+
+        payload = {
+            "query": {
+                "query": f"attribute:\""
+                + attr_name
+                + "\" AND name.exact:\""
+                + attr_value
+                + "\" AND source.name.exact:\""
+                + source_name
+                + "\""
+            },
+            "indices": ["entitlements"],
+            "includeNested": "False",
+            "sort": ["-created"],
+        }
+        log.debug(payload)
+        ret = self.api('search', method='POST', payload=payload)
+        entitlement_info = ret.json()
+        log.debug(entitlement_info)
+        return entitlement_info
+
+    def get_id_by_alias(self, alias):
+        """Gets an Identity for the alias requested
+
+        This will throw an error if results of matching IDs is not exactly 1
+
+        Parameters
+        --------------------
+        alias: string
+            The alias of the identity you want to retrieve
+
+        Returns
+        --------------------
+        id: IdentityNow ID object
+            The Identity
+
+        """
+        # Get IDN ID by the alias name
+        log.info(f'Getting ID for alias: {alias}')
+        params = f'filters=alias eq "{alias}"'
+        headers = {'X-SailPoint-Experimental': 'true'}
+        response = self.api(
+            endpoint=f'identities/?{params}', api='v2024', headers=headers
+        )
+        if response.status_code != 200:
+            raise Exception(
+                f"API request failed with status {response.status_code}"
+            )
+        ret = response.json()
+
+        log.debug(pretty(ret))
+
+        if len(ret) > 1:
+            raise Exception('Found too many IDs for this alias')
+        elif len(ret) == 0:
+            raise Exception('Did not find ID for this alias')
+        else:
+            log.info('Found IDN ID: {ret[0].get("id")}')
+            return ret[0]
 
     def get_id_by_login(self, login, include_nested=False):
         """Gets an Identity for the login specified
@@ -362,7 +998,7 @@ class IDN:
         log.debug('Getting id by login')
         payload = {
             "query": {
-                "query": f"attributes.activeDirectoryUsername:\"{login}\""
+                "query": f"attributes.correlatedActiveDirectoryUsername:\"{login}\""
             },
             "indices": ["identities"],
             "includeNested": include_nested,
@@ -464,18 +1100,114 @@ class IDN:
             },
         }
         log.debug('Creating Access Profile')
-        log.debug(pretty_repr(payload))
+        log.debug(pretty(payload))
         log.debug(json.dumps(payload))
         ret = self.api('access-profiles', method='POST', payload=payload)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
             return None
 
-    def list_accounts_for_source(self, source_id=None, source_name=None):
+    def get_account(self, source_name=None, account_name=None):
+        """Gets accounts for a specific source
+
+        Parameters
+        --------------------
+        source_name: string
+            The name of the source
+
+        account_name: string
+            The Name of the account
+
+        Returns
+        --------------------
+        accounts: generator of dicts
+            The accounts
+
+        """
+
+        source_id = self.get_sourceid_for_name(source_name)
+
+        log.debug(f'Getting accounts for source: {source_id}')
+        # parameters = f'filters=source.id in ("{source_id}")'
+        parameters = (
+            f'filters=name eq "{account_name}" and sourceId eq "{source_id}"'
+        )
+
+        offset = 0
+
+        while True:
+            ret = self.api(f'accounts?offset={offset}&limit=250&{parameters}')
+            log.debug(ret)
+            log.debug(ret.text)
+            log.debug(ret.status_code)
+            if ret.status_code == 200:
+                accounts = ret.json()
+
+                if len(accounts) == 0:
+                    break
+
+                for ap in accounts:
+                    offset += 1
+                    yield (ap)
+            else:
+                log.warning(ret.text)
+                log.warning(ret.status_code)
+                log.warning('Did not get 200 status_code - retrying')
+
+    def get_account_attribute_value(self, source_name, account_id, attr_name):
+        """Gets the value of a specified account attribute from a source
+
+        Returns a value if found
+
+        Parameters
+        --------------------
+        source_name: string
+            The name of the SOURCE where the account can be found.
+
+        account_id: string
+            The unique 'account id' value on the SOURCE schema
+
+        attr_name: string
+            The attribute name on the SOURCE which holds the value
+
+        Returns
+        --------------------
+        Attribute value:
+                string
+
+        """
+
+        log.debug(
+            f'Getting attribute value for {account_id} for attribute :{attr_name} on source: {source_name}'
+        )
+
+        response = self.api(
+            f'accounts?filters=source.displayableName eq "{source_name}" and nativeIdentity eq "{account_id}"',
+            method='GET',
+            api='v3',
+        )
+
+        # Check if the response is successful
+        if response.status_code != 200:
+            raise Exception(
+                f"API request failed with status {response.status_code}"
+            )
+
+        accts = response.json()
+
+        for acct in accts:
+            log.debug(acct.get('attributes', {}).get(attr_name))
+            return acct.get('attributes', {}).get(attr_name)
+
+        return None
+
+    def list_accounts_for_source(
+        self, source_id=None, source_name=None, include_type='all'
+    ):
         """Lists accounts for a specific source
 
         Parameters
@@ -486,7 +1218,13 @@ class IDN:
         source_name: string
             The Name of the source
 
-        Either the name or the ID must be specified
+            Either the name or the ID must be specified
+
+        include_type: string
+            Options are :
+                            all **Default
+                            uncorrelated
+                            correlated
 
         Returns
         --------------------
@@ -500,7 +1238,21 @@ class IDN:
 
         log.debug(f'Getting accounts for source: {source_id}')
         # parameters = f'filters=source.id in ("{source_id}")'
-        parameters = f'filters=sourceId eq "{source_id}"'
+
+        if include_type == 'uncorrelated':
+            parameters = (
+                f'filters=sourceId eq "{source_id}" and uncorrelated eq true'
+            )
+        elif include_type == 'correlated':
+            parameters = (
+                f'filters=sourceId eq "{source_id}" and uncorrelated eq false'
+            )
+        elif include_type == 'all':
+            parameters = f'filters=sourceId eq "{source_id}"'
+        else:
+            raise Exception(
+                'include_type invalid. Must be either all, uncorrelated or correlated'
+            )
 
         offset = 0
 
@@ -700,24 +1452,24 @@ class IDN:
 
         ret = self.api(f'entitlements/{entitlement_id}', api='beta')
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def list_apps(self):
         """List all apps from IDN for the org (aka. Tennant)"""
         log.debug('list_apps - start')
         ret = self.api('app/list?filter=org', api='cc')
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def get_ap(self, ap_id=None, ap_name=None):
         """Gets the Access Profile
@@ -777,7 +1529,7 @@ class IDN:
             ret = self.api(f'access-profiles/{ap_id}', api='v3')
 
             try:
-                log.debug(pretty_repr(ret.json()))
+                log.debug(pretty(ret.json()))
                 return ret.json()
             except:
                 log.error(ret.status_code)
@@ -832,7 +1584,7 @@ class IDN:
         )
 
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -897,7 +1649,7 @@ class IDN:
             ret = self.api(f'app/get/{app_id}', api='cc')
 
             try:
-                log.debug(pretty_repr(ret.json()))
+                log.debug(pretty(ret.json()))
                 return ret.json()
             except:
                 log.error(ret.status_code)
@@ -938,7 +1690,7 @@ class IDN:
         log.debug(payload)
         ret = self.api('app/create', method='POST', payload=payload, api='cc')
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -981,7 +1733,7 @@ class IDN:
 
         log.debug(ret)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -1045,12 +1797,12 @@ class IDN:
             ret = self.api(f'app/delete/{app_id}', method='POST', api='cc')
 
             try:
-                log.debug(pretty_repr(ret.json()))
+                log.debug(pretty(ret.json()))
                 return ret.json()
             except:
                 log.error(ret.status_code)
                 log.error(ret.text)
-                return none
+                return None
 
         msg = 'delete_app requires app_name or app_id'
         log.error(msg)
@@ -1088,12 +1840,12 @@ class IDN:
 
         # Using the ID there should only be one
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()[0]
         except:
             log.error(ret.status_code)
             log.error(ret.text)
-            return none
+            return None
 
     def get_app_access_profiles(self, app_id):
         """Gets the access profiles for an app.
@@ -1116,7 +1868,7 @@ class IDN:
         ret = self.api(f'app/getAccessProfiles/{app_id}', api='cc')
 
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()['items']
         except:
             log.error(ret.status_code)
@@ -1137,7 +1889,7 @@ class IDN:
 
         payload = {
             "query": {"query": "email:\"davep@fitchratings.com\""},
-            "indices": ["identities"],
+            "indices": ["identities"]
         }
 
         Parameters
@@ -1222,7 +1974,7 @@ class IDN:
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -1256,20 +2008,23 @@ class IDN:
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
             log.error(ret.text)
             return None
 
-    def get_user_by_id(self, user_id):
+    def get_user_by_id(self, user_id, include_nested=False):
         """Gets the user by their ID
 
         Parameters
         --------------------
         user_id: string
             The users ID.
+
+        include_nested: boolean
+            Will include nested objects
 
         Results
         --------------------
@@ -1279,6 +2034,7 @@ class IDN:
         payload = {
             "query": {"query": f"id:\"{user_id}\""},
             "indices": ["identities"],
+            "includeNested": include_nested,
         }
         log.debug(payload)
         ret = self.api('search', method='POST', payload=payload)
@@ -1289,7 +2045,7 @@ class IDN:
 
     def list_identity_profiles(self):
         """List identity profiles"""
-        ret = self.api('identity_profiles', method='GET', api='beta')
+        ret = self.api('identity-profiles', method='GET', api='v3')
         sources = ret.json()
         log.debug(str(sources))
         return sources
@@ -1298,7 +2054,7 @@ class IDN:
         """List all sources"""
         ret = self.api('sources', method='GET', api='beta')
         sources = ret.json()
-        log.debug(str(sources))
+        log.debug(len(sources))
         return sources
 
     def run_acct_aggregation(self, source_name, optimized=True):
@@ -1325,18 +2081,20 @@ class IDN:
         else:
             disable_opt = 'true'
 
-        cloud_id = self.get_sourceid_for_name(
-            source_name, id_type='cloudExternalId'
-        )
+        cloud_id = self.get_sourceid_for_name(source_name, id_type='id')
         log.debug(f'Running aggregation on cloudID: {cloud_id}')
 
         ret = self.api(
-            f'source/loadAccounts/{cloud_id}?disableOptimization={disable_opt}',
+            f'sources/{cloud_id}/load-accounts?disableOptimization={disable_opt}',
+            # f'sources/{cloud_id}/load-accounts',
+            # payload={'disableOptimization': disable_opt},
             method='POST',
-            api='cc',
+            api='beta',
+            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            # headers={'X-SailPoint-Experimental': 'true'},
         )
         try:
-            log.debug(pretty_repr(ret.json()))
+            log.debug(pretty(ret.json()))
             return ret.json()
         except:
             log.error(ret.status_code)
@@ -1372,11 +2130,74 @@ class IDN:
 
         for s in all_sources:
             if s.get('name') == name:
-                log.debug(pretty_repr(s))
+                log.debug(pretty(s))
                 if id_type == 'id':
                     return s.get('id')
                 else:
                     return s['connectorAttributes']['cloudExternalId']
+
+    def get_approvals(self, approver_id=None, recipient_id=None):
+        """Gets approvals waiting for a user
+
+        Parameters
+        --------------------
+        approver_id: string
+            The ID of the approver
+
+            ORG_ADMIN users can call this with any identity ID value.
+            ORG_ADMIN users can also fetch all the approvals in the org, when
+                owner-id is not used.
+            Non-ORG_ADMIN users can only specify me or pass their own
+                identity ID value.
+
+        recipient_id: string
+            The ID of the recipient
+
+        Returns
+        --------------------
+        List of approvals pending
+        """
+
+        offset = 0
+        if approver_id:
+            parameters = f'owner-id={approver_id}'
+        else:
+            parameters = ''
+
+        if recipient_id:
+            parameters = f'approver_idowner-id={approver_id}'
+            parameters = (
+                f'{parameters}&filters=requestedFor.id eq "{recipient_id}"'
+            )
+
+        log.info(parameters)
+
+        while True:
+            endpoint = f'access-request-approvals/pending?offset={offset}&limit=250&sorters=created&{parameters}'
+            # endpoint = f'access-request-approvals/pending'
+            ret = self.api(endpoint, api='beta')
+            # log.info(pretty(ret))
+            if ret.status_code == 200:
+                approvals = ret.json()
+
+                if len(approvals) == 0:
+                    break
+
+                for g in approvals:
+                    offset += 1
+                    log.debug(pretty(g))
+                    yield (g)
+            elif ret.status_code == 400:
+                # maybe searching past offset limit?
+                log.warning(ret.text)
+                log.warning(ret.status_code)
+                log.warning('Probably you have hit the offset limit')
+                # just finish
+                break
+            else:
+                log.warning(ret.text)
+                log.warning(ret.status_code)
+                log.warning('Did not get 200 status_code - retrying')
 
     def update_approval(
         self,
@@ -1425,11 +2246,9 @@ class IDN:
         }
 
         if action == 'forward':
-            payload = {
-                'newOwnerId': new_owner,
-            }
+            payload['newOwnerId'] = new_owner
 
-        ret = self.r(
+        ret = self.api(
             f'access-request-approvals/{approval_id}/{action}',
             method='POST',
             payload=payload,
@@ -1439,18 +2258,21 @@ class IDN:
         log.debug(ret)
         return ret
 
-    def main_search(self, thing):
+    def main_search(self, thing, query="*"):
         """Generic search for things
 
         Parameters
         --------------------
         things: string
 
+        query: string (default: *)
+            The query string you want to use
+
             Could be  accessprofiles, identities, entitlements etc.
         """
         out = {}
         payload = {
-            "query": {"query": "*"},
+            "query": {"query": query},
             "indices": [thing],
         }
         ret = self.search(payload)
@@ -1489,15 +2311,47 @@ class IDN:
     def get_all_entitlements(self):
         """Gets all entitlements indexed by guid"""
         log.info('Getting entitlements')
-        out = {}
         for s in self.list_sources():
             for e in self.get_entitlements_for_source(s.get('id')):
-                out[e.get('id')] = e
+                yield e.get('id'), e
 
         # out = main_search('entitlements')
-        log.info('Done getting entitlements')
-        log.info(f'Number of entitlements: {len(out)}')
-        return out
+
+    #        log.info('Done getting entitlements')
+    #        log.info(f'Number of entitlements: {len(out)}')
+    # return out
+
+    def get_item_description(self, item_id, refresh=False):
+        '''
+        Gets a description for the specified item_id
+
+        Parameters:
+            item_id: (string) the item ID you want to get the description for
+            refresh: (bool) Whether to refresh the description even if we
+                have it cached already. default: False
+
+        Data is cached for the life of the idn object
+        '''
+        # log.info(item_id)
+
+        # If we have this item_id in memory already use the description
+        if item_id in self.item_descriptions and refresh is False:
+            return self.item_descriptions[item_id]
+        else:  # we need to look it up
+            payload = {
+                "query": {"query": f"id:\"{item_id}\""},
+            }
+            search_results = self.search(payload=payload)
+
+            for thing in search_results:
+                # log.info('Description' + pretty(thing.get('description')))
+                description = thing.get('description')
+
+                # Add this description to memory
+                self.item_descriptions[item_id] = description
+
+                # return description
+                return description
 
 
 if __name__ == '__main__':

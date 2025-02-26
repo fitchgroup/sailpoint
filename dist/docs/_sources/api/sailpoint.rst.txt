@@ -12,6 +12,14 @@ sailpoint.api module
    :undoc-members:
    :show-inheritance:
 
+sailpoint.idnscripts module
+---------------------------
+
+.. automodule:: sailpoint.idnscripts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 sailpoint.report module
 -----------------------
 

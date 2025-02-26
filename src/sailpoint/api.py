@@ -39,10 +39,11 @@ class IDNApi:
 
         # log.debug(f'curl --request POST --url {url}')
         if zscaler_cert_file:
-            x = requests.post(url, verify=zscaler_cert_file)
+            x = requests.post(url, verify=zscaler_cert_file, timeout=10)
         else:
             x = requests.post(
                 url,
+                timeout=10
                 #            proxies=dict(
                 #                http='socks5://localhost:8888',
                 #                https='socks5://localhost:8888'
@@ -83,6 +84,8 @@ class IDNApi:
             - You can pass offset and limit manually as part of the endpoint
               string to overcome this
         """
+        if api in ['cc', 'v1', 'v2']:
+            log.warning(f'Using deprecated API: {api} - {endpoint}')
 
         if api == 'cc':
             url = (
@@ -97,46 +100,48 @@ class IDNApi:
             'Authorization': f'Bearer {self.token}',
         }
         default_headers.update(headers)
-        log.debug(default_headers)
+        # log.debug(default_headers)
         log.debug(f'URL: {url}')
         # quit()
+        response = None
 
         if zscaler_cert_file:
-            for _ in range(5):  # try up to 5 times
-                try:
-                    response = requests.request(
-                        method,
-                        url,
-                        headers=default_headers,
-                        files=files,
-                        verify=zscaler_cert_file,
-                        json=payload,
-                    )
-                    break
-                except Exception as e:
-                    log.error(e)
-                    log.error('Sleeping 300ms and trying again up to 5 times')
-                    time.sleep(300 / 1000)  # sleep for 300ms
-                    pass
+            verify = zscaler_cert_file
         else:
-            for _ in range(5):  # try up to 5 times
-                try:
-                    response = requests.request(
-                        method,
-                        url,
-                        headers=default_headers,
-                        files=files,
-                        json=payload,
+            verify = True
+
+        # Exponential backoff to be nice to SailPoint's API
+        BASE_SLEEP_TIME = 0.5  # base sleep time in seconds (500ms)
+        MAX_RETRIES = 10
+
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = requests.request(
+                    method,
+                    url,
+                    headers=default_headers,
+                    verify=verify,
+                    files=files,
+                    json=payload,
+                    timeout=30,
+                )
+                return response
+            except Exception as e:
+                log.warning(e)
+                if (
+                    attempt < MAX_RETRIES - 1
+                ):  # don't sleep after the last attempt
+                    sleep_time = BASE_SLEEP_TIME * (2**attempt)
+                    log.warning(
+                        f"Sleeping {sleep_time:.2f}s and trying again {attempt + 1} of {MAX_RETRIES} times"
                     )
-                    break
-                except Exception as e:
-                    log.error(e)
-                    log.error('Sleeping 300ms and trying again up to 5 times')
-                    time.sleep(300 / 1000)  # sleep for 300ms
-                    pass
-        log.debug(response)
-        log.debug(response.text)
-        return response
+                    time.sleep(sleep_time)
+                else:
+                    log.warning("Max retries reached, exiting.")
+
+        raise Exception(
+            'After multiple attempts API calls have failed. See warning logs for details'
+        )
 
 
 def set_disableOrderingCheck(api, source_id):
