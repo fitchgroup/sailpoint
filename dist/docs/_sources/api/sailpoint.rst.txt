@@ -12,18 +12,18 @@ sailpoint.api module
    :undoc-members:
    :show-inheritance:
 
-sailpoint.report module
------------------------
+sailpoint.idnscripts module
+---------------------------
 
-.. automodule:: sailpoint.report
+.. automodule:: sailpoint.idnscripts
    :members:
    :undoc-members:
    :show-inheritance:
 
-sailpoint.skeleton module
--------------------------
+sailpoint.report module
+-----------------------
 
-.. automodule:: sailpoint.skeleton
+.. automodule:: sailpoint.report
    :members:
    :undoc-members:
    :show-inheritance:
