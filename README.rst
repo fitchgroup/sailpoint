@@ -10,10 +10,12 @@ The aim of this project is to allow for an easy and fast way to build python
 scripts for common implementation and administration tasks for SailPoint
 IdentityNow.
 
-This project provides integration with the SailPoint IdentityNow APIs,
-including the cc, v2, v3, and beta APIs. A level of abstraction is provided
-which removes the need to call each of the lower level APIs calls, or know
-which particular API you need to call.
+This project provides integration with the SailPoint IdentityNow APIs.  In
+some cases the the cc, and v2 APIs have been used but as these have been
+deprecated by SailPoint and efforts are underway to move everything to use
+the v3, and beta APIs. A level of abstraction is provided which removes the
+need to call each of the lower level APIs calls, or know which particular API
+you need to call.
 
 Documentation
 ================
@@ -36,7 +38,7 @@ Getting Started
 
 Install the python module using pip:
 
-``pip install sailpoint-1.6-py3-none-any.whl``
+``pip install sailpoint-1.7-py3-none-any.whl``
 
 The wheel file can be found in the `dist` directory.
 

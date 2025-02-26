@@ -2,6 +2,27 @@
 Changelog
 =========
 
+Version 1.7
+===========
+- Adding get_attribute_map and provisioning policies
+- Adding retry for governance group member retrival
+- Fix formatting and adding get_id_by_alias function
+- Added function to update Governance group
+- Fixing docstrings
+- Adding new gg_membership report and get_descriptions function
+- Changing retry and timeouts, and setting logs to warning level
+- Added function for getting account attribute value
+- Formatting and get_all_entitlements should return a generator
+- Adding cancel_old_approvals function
+- Changes to support new API call for unoptimized aggregation
+- Added function - get_entitlement Modified existing function for listing account
+- Adding recipient_id as a filter to get_approvals
+- Fixing parameters
+- Adding get_approvals function
+- Updating description of APIs that are used
+- Fixing API calls
+- Adding get_account function
+
 Version 1.6
 ===========
 - Fixing reference to API

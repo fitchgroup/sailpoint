@@ -1,7 +1,80 @@
 import logging
+from datetime import datetime, timedelta
 from rich.pretty import pretty_repr as pretty
 
 log = logging.getLogger(__name__)
+
+
+def cancel_old_approvals(
+    idn, days_threshold=90, cancel_reason=None, report_only=True
+):
+    '''Cancels old approvals
+
+    Cancels approvals older than days_threshold
+
+    Parameters
+    --------------------
+    idn: idn object
+        The IDN connection object
+
+    days_threshold: int
+        Approvals open for longer than days approvals will
+        be cancelled
+
+    cancel_reason: string
+        The reason for canceling the request
+
+    report_only: bool
+        If true, the return value will show only what would be done and no
+        action on the approvals is actually preformed
+
+    '''
+
+    date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    # Get the current date and time
+    current_date = datetime.utcnow()
+    old_approvals = []
+    current_approvals = []
+    total_approvals = []
+
+    for approval in idn.get_approvals():
+        log.debug(approval)
+        total_approvals.append(approval.get('id'))
+        # Date string and days threshold
+        date_string = approval.get('created')
+
+        # Parse the date string into a datetime object
+        date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+        parsed_date = datetime.strptime(date_string, date_format)
+
+        # Calculate the difference in days
+        difference = current_date - parsed_date
+
+        # Check if the difference is greater than the threshold
+        if difference > timedelta(days=days_threshold):
+            log.info(f'The request is older than the threshold. {date_string}')
+            old_approvals.append(approval.get('id'))
+            if report_only:
+                pass
+                log.warning('Report only mode - not processing')
+            else:
+                ret = idn.update_approval(
+                    approval.get('id'), action='reject', reason=cancel_reason
+                )
+                log.info(ret)
+        else:
+            log.info(
+                f'The request is not older than the threshold. {date_string}'
+            )
+            current_approvals.append(approval.get('id'))
+    log.info(f'Total Approvals: {len(total_approvals)}')
+    log.info(f'Cancelled Approvals: {len(old_approvals)}')
+    log.info(f'Current Approvals: {len(current_approvals)}')
+    return {
+        'total_approvals': total_approvals,
+        'cancelled_approvals': old_approvals,
+        'current_approvals': current_approvals,
+    }
 
 
 class SODChecker:
@@ -19,23 +92,29 @@ class SODChecker:
         self.idn = idn
 
     def remove_access(self, violator, access, reason):
-        '''removes the access from the violator
+        '''Removes access from an SOD violator.
 
-        Removes access from an SOD violator
+        This function removes the specified access from a violator based on
+        the provided reason. If the system is in 'report only' mode, it will
+        log a warning and not perform the action.
 
         Parameters
-        --------------------
-        violator: The violator ID
+        ----------
+        violator : dict
+            A dictionary containing the violator's information, including
+            their ID.
 
+        access : dict
+            A dictionary containing the access information that needs to be
+            removed, including the type and ID of the access.
 
-        sort: string
-            The key to sort on. Default is 'id'
+        reason : str
+            A string specifying the reason for removing the access.
 
-        Results
-        --------------------
-        True if access was removed
-        False if not
-
+        Returns
+        -------
+        bool
+            True if the access was successfully removed, False otherwise.
         '''
         if self.report_only:
             log.warning(

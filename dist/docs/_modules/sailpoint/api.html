@@ -4,19 +4,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>sailpoint.api &#8212; sailpoint 1.5.post1.dev22+g639b4f6 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=233b9934" />
-    <script src="../../_static/documentation_options.js?v=57dfdc22"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <title>sailpoint.api &#8212; sailpoint 1.5.post1.dev52+g02d0a47 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=0ca6144b" />
+    <script src="../../_static/documentation_options.js?v=1e55777c"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -29,11 +31,11 @@
           <div class="body" role="main">
             
   <h1>Source code for sailpoint.api</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">time</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -50,8 +52,8 @@
 
 <div class="viewcode-block" id="IDNApi">
 <a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi">[docs]</a>
-<span class="k">class</span> <span class="nc">IDNApi</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tenant</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IDNApi</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tenant</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># If the API settings didn&#39;t come from instantiation then get from</span>
         <span class="c1"># config</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">secret</span> <span class="ow">and</span> <span class="n">client_id</span> <span class="ow">and</span> <span class="n">tenant</span><span class="p">):</span>
@@ -88,7 +90,7 @@
 
 <div class="viewcode-block" id="IDNApi.get_api_config">
 <a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi.get_api_config">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_api_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_api_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">),</span> <span class="s1">&#39;.idn_api&#39;</span><span class="p">)</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -106,7 +108,7 @@
 
 <div class="viewcode-block" id="IDNApi.r">
 <a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.IDNApi.r">[docs]</a>
-    <span class="k">def</span> <span class="nf">r</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">r</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">endpoint</span><span class="p">,</span>
         <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span>
@@ -122,7 +124,7 @@
 <span class="sd">            - You can pass offset and limit manually as part of the endpoint</span>
 <span class="sd">              string to overcome this</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">api</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">api</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cc&#39;</span><span class="p">,</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="p">]:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using deprecated API: </span><span class="si">{</span><span class="n">api</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">endpoint</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">api</span> <span class="o">==</span> <span class="s1">&#39;cc&#39;</span><span class="p">:</span>
@@ -141,9 +143,10 @@
         <span class="c1"># log.debug(default_headers)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;URL: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1"># quit()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">zscaler_cert_file</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>  <span class="c1"># try up to 5 times</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>  <span class="c1"># try up to 10 times</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
                         <span class="n">method</span><span class="p">,</span>
@@ -152,16 +155,18 @@
                         <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
                         <span class="n">verify</span><span class="o">=</span><span class="n">zscaler_cert_file</span><span class="p">,</span>
                         <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
-                        <span class="n">timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                        <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
                     <span class="p">)</span>
-                    <span class="k">break</span>
+                    <span class="k">return</span> <span class="n">response</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Sleeping 300ms and trying again up to 5 times&#39;</span><span class="p">)</span>
-                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">300</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Sleeping 500ms and trying again </span><span class="si">{</span><span class="n">_</span><span class="si">}</span><span class="s1"> of 10  times&#39;</span>
+                    <span class="p">)</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">500</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
                     <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>  <span class="c1"># try up to 5 times</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>  <span class="c1"># try up to 10 times</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
                         <span class="n">method</span><span class="p">,</span>
@@ -169,24 +174,27 @@
                         <span class="n">headers</span><span class="o">=</span><span class="n">default_headers</span><span class="p">,</span>
                         <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
                         <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
-                        <span class="n">timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                        <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
                     <span class="p">)</span>
-                    <span class="k">break</span>
+                    <span class="k">return</span> <span class="n">response</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Sleeping 300ms and trying again up to 5 times&#39;</span><span class="p">)</span>
-                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">300</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Sleeping 500ms and trying again </span><span class="si">{</span><span class="n">_</span><span class="si">}</span><span class="s1"> of 10  times&#39;</span>
+                    <span class="p">)</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">500</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># sleep for 300ms</span>
                     <span class="k">pass</span>
-        <span class="c1"># log.debug(response)</span>
         <span class="c1"># log.debug(response.text)</span>
-        <span class="k">return</span> <span class="n">response</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s1">&#39;After multiple attempts API calls have failed. See warning logs for details&#39;</span>
+        <span class="p">)</span></div>
 </div>
 
 
 
 <div class="viewcode-block" id="set_disableOrderingCheck">
 <a class="viewcode-back" href="../../api/sailpoint.html#sailpoint.api.set_disableOrderingCheck">[docs]</a>
-<span class="k">def</span> <span class="nf">set_disableOrderingCheck</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">source_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_disableOrderingCheck</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">source_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    set_disableOrderingCheck</span>
 
@@ -224,7 +232,7 @@
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h1 class="logo"><a href="../../index.html">sailpoint</a></h1>
 
@@ -235,7 +243,16 @@
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../readme.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributions &amp; Help</a></li>
@@ -254,16 +271,6 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -277,11 +284,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2023, Dave Peters.
+      &#169;2023, Dave Peters.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
     </div>
 
